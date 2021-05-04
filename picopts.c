@@ -1,6 +1,6 @@
 // Elliott 900Paper Tape Station  emulator for Raspberry Pi Pico
 
-// Copyright (c) Andrew Herbert - 28/04/2021
+// Copyright (c) Andrew Herbert - 04/05/2021
 
 // MIT Licence.
 
@@ -195,6 +195,7 @@ static inline UINT8  logging();                    // TRUE is logging enabled
 static inline UINT8  ack();                        // signal an ACK
 static inline void   set_power_on();               // set NOPOWER LOW
 static inline void   set_power_off();              // set NOPOWER HIGH
+static inline UINT8  wait_for_request();           // wait for RDR or PUN request
 static inline void   put_pts_ch(const UINT8 ch);   // send from paper tape reader
 static inline UINT8  get_pts_ch();                 // receive from paper tape punch
 static inline UINT8  Wait_for_request();           // wait for reader or punch request
@@ -268,6 +269,13 @@ void reader_test()
   puts("Reader test starting");
   for ( UINT32 c = 0 ; c < 10000 ; c++ )
     {
+      printf("Cycle %u (%u)\n", c, c%256);
+      if ( wait_for_request() != 0 )
+	{
+	  puts("Got punch request in reader test!");
+	  longjmp(jbuf, 0);
+	}
+				       
       put_pts_ch(c%256);
       sleep_us(10);
     }
@@ -282,8 +290,14 @@ void punch_test()
   // simple test loop emulating read
   for ( UINT32 c = 0 ; c < 1000 ; c++ )
     {
-      //printf("Cycle %u\n", c);
-      int ch = get_pts_ch(c);
+      printf("Cycle %u (%u)\n", c, c%256);
+      int ch;
+      if ( wait_for_request() != 1 )
+	{
+	  puts("Got read request in unch test!");
+	  longjmp(jbuf,0);
+	}
+	ch = get_pts_ch(c);
       if  (ch != (c%256) ) 
 	{
 	  printf("Failed after %d got %d, expected %d\n",c, ch, c%256);
@@ -294,6 +308,7 @@ void punch_test()
 	      longjmp(jbuf, 0);
 	    }
 	 }
+      sleep_us(10);
     }
   puts("Punch test complete");
 }
@@ -306,7 +321,9 @@ void punch_test()
 
 /*  Output a character to paper tape station */
 
-static inline void put_pts_ch(const UINT8 ch) {
+static inline void put_pts_ch(const UINT8 ch)
+{
+  puts("put_pts_ch");
   gpio_put_masked(RDR_PINS_MASK, ch << RDR_1_PIN); // write 8 bits
   ack();
 }
@@ -316,6 +333,7 @@ static inline void put_pts_ch(const UINT8 ch) {
 static inline UINT8 get_pts_ch()
 {
   static UINT8 ch;
+  puts("get_pts_ch");
   ch = (gpio_get_all() >> PUN_1_PIN) & 255; // write 8 bits
   ack();
   return(ch);
