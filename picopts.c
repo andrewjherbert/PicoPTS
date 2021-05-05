@@ -143,18 +143,17 @@ typedef uint_fast64_t  UINT64;
 
 #define PUN_PINS_MASK 0177400 // PINs to bit mask
 
+/* N.B. the following pins are different to those assigned in pico900 */
 #define NOPOWER_PIN 16 // set HIGH to stop and reset, set LOW to run
 #define ACK_PIN     17 // pulse HIGH to acknowledge RDR or PUN request
 #define II_AUTO_PIN 18 // set HIGH to autostart on reset, or LOW to execute
                        // initial instructions
-#define LOG_PIN     19 // set HIGH to enable logging to USB serial port
+#define TTYSEL_PIN  19 // Computer sets HIGH to select teleprinter,
+                       // LOW for paper tape
+#define PUNREQ_PIN  20 // Pico sets HIGH to request punch output and
+                       // awaits ACK
 #define RDRREQ_PIN  21 // Computer sets HIGH to request reader input and
                        // awaits ACK
-#define PUNREQ_PIN  22 // Pico sets HIGH to request punch output and
-                       // awaits ACK
-#define TTYSEL_PIN  26 // Computer sets HIGH to select teleprinter,
-                       // LOW for paper tape
-// GPIO24 spare
 #define LED_PIN     25 // onboard LED
 // GPIO26 spare
 // GPIO27 spare
@@ -211,7 +210,7 @@ void punch_test();
 
 int main() {
 
-  int errors = 0;
+  int static UINT32 restarts = 0;
 
   bi_decl(bi_program_description("Elliott 900 PTS Emulator by Andrew Herbert"));
 
@@ -227,7 +226,7 @@ int main() {
   logging_enabled = logging();     // print logging messages to usb?
  
   if ( logging_enabled )
-      puts("\n\n\nPTS Starting");
+    printf("\n\n\nPTS Starting (%u)", ++restarts);
 
   // 4 blinks to signal waking up
   for ( UINT8 i = 1 ; i <= 4 ; i++ )
@@ -238,7 +237,7 @@ int main() {
       sleep_ms(250);
     }
 
-  // wait for reset sequence from host
+  // power cycle 920M to reset it
   set_power_off();
   sleep_ms(1000); // give 920M time to respond
   set_power_on();
@@ -251,7 +250,6 @@ int main() {
   
   while ( TRUE ) // run emulation for ever
   {
-    if ( logging_enabled ) printf("\n\n\n\n\nPICO PTS starting\n");
     led_on(); // set LED to indicate running
 
     /* main loop */
@@ -294,7 +292,7 @@ void punch_test()
       int ch;
       if ( wait_for_request() != 1 )
 	{
-	  puts("Got read request in unch test!");
+	  puts("Got read request in punch test!");
 	  longjmp(jbuf,0);
 	}
 	ch = get_pts_ch(c);
@@ -319,7 +317,8 @@ void punch_test()
 /**********************************************************/
 
 
-/*  Output a character to paper tape station */
+/*  Output a character to paper tape station */ 
+/*  i.e., punch or tty output                */
 
 static inline void put_pts_ch(const UINT8 ch)
 {
@@ -329,6 +328,7 @@ static inline void put_pts_ch(const UINT8 ch)
 }
 
 /* Input a character from the paper tape station */
+/* i.e., reader or tty input                     */
 
 static inline UINT8 get_pts_ch()
 {
