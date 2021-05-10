@@ -1,6 +1,6 @@
-// Elliott 900Paper Tape Station  emulator for Raspberry Pi Pico
+// Elliott 900 Paper Tape Station  emulator for Raspberry Pi Pico
 
-// Copyright (c) Andrew Herbert - 04/05/2021
+// Copyright (c) Andrew Herbert - 10/05/2021
 
 // MIT Licence.
 
@@ -216,6 +216,15 @@ int main() {
 
   stdio_init_all(); // initialise stdio
   set_up_gpios(); // configure interface to outside world
+
+  // 4 blinks to signal waking up
+  for ( UINT8 i = 1 ; i <= 40004 ; i++ )
+    {
+      led_on();
+      sleep_ms(250);
+      led_off();
+      sleep_ms(250);
+    }
     
   while ( !tud_cdc_connected() ) sleep_ms(100); // wait for usb to wake up
 
@@ -228,14 +237,7 @@ int main() {
   if ( logging_enabled )
     printf("\n\n\nPTS Starting (%u)", ++restarts);
 
-  // 4 blinks to signal waking up
-  for ( UINT8 i = 1 ; i <= 4 ; i++ )
-    {
-      led_on();
-      sleep_ms(250);
-      led_off();
-      sleep_ms(250);
-    }
+
 
   // power cycle 920M to reset it
   set_power_off();
