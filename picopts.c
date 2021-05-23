@@ -1,6 +1,7 @@
+
 // Elliott 900 Paper Tape Station  emulator for Raspberry Pi Pico
 
-// Copyright (c) Andrew Herbert - 10/05/2021
+// Copyright (c) Andrew Herbert - 23/05/2021
 
 // MIT Licence.
 
@@ -25,7 +26,7 @@
 // signal transfer complete.  
 //
 // PUNReq_PIN, high signals a punch request. The paper tape
-// station is expected to laod 8 bits of data from pins PUN_1_PIN
+// station is expected to load 8 bits of data from pins PUN_1_PIN
 // (lsb) to PUN_128_PIN (msb) and then raise ACK_PIN high for
 // approximately 5uS to indicate the output data have been copied.
 // Once the ACK_PIN is lowered the computer then lowers PUNReq-PIN.
@@ -45,7 +46,7 @@
 //
 // NOPOWER_PIN, high signals that the computer should stop
 // execution and enter a reset state.  Low signals that
-// the computer whould wake up if in the reset state and
+// the computecd r whould wake up if in the reset state and
 // execute an autostart or initial instructions as determined
 // by II_AUTO.  NOPOWER should remain low so that the computer
 // can continue to execute until next reset by raising NOPOWER
@@ -149,11 +150,13 @@ typedef uint_fast64_t  UINT64;
 #define II_AUTO_PIN 18 // set HIGH to autostart on reset, or LOW to execute
                        // initial instructions
 #define TTYSEL_PIN  19 // Computer sets HIGH to select teleprinter,
-                       // LOW for paper tape
+                        // LOW for paper tape
 #define PUNREQ_PIN  20 // Pico sets HIGH to request punch output and
                        // awaits ACK
 #define RDRREQ_PIN  21 // Computer sets HIGH to request reader input and
                        // awaits ACK
+#define LOG_PIN     22 // set HIGH to enable logging
+// GPIO 23, 24 internal
 #define LED_PIN     25 // onboard LED
 // GPIO26 spare
 // GPIO27 spare
@@ -200,8 +203,10 @@ static inline UINT8  get_pts_ch();                 // receive from paper tape pu
 static inline UINT8  Wait_for_request();           // wait for reader or punch request
 static inline UINT8  teletype();                   // TRUE if teletype selected
 
+void loopback_test();
 void reader_test();
 void punch_test();
+
 
 
 /**********************************************************/
@@ -210,15 +215,18 @@ void punch_test();
 
 int main() {
 
-  int static UINT32 restarts = 0;
+  static UINT32 restarts = 0;
 
   bi_decl(bi_program_description("Elliott 900 PTS Emulator by Andrew Herbert"));
 
   stdio_init_all(); // initialise stdio
   set_up_gpios(); // configure interface to outside world
 
+  // long jump to here resets simulation
+  setjmp(jbuf);
+
   // 4 blinks to signal waking up
-  for ( UINT8 i = 1 ; i <= 40004 ; i++ )
+  for ( UINT8 i = 1 ; i <= 4 ; i++ )
     {
       led_on();
       sleep_ms(250);
@@ -228,23 +236,25 @@ int main() {
     
   while ( !tud_cdc_connected() ) sleep_ms(100); // wait for usb to wake up
 
-  // long jump to here resets simulation
-  setjmp(jbuf);
-
   // set local flags based on external inputs
   logging_enabled = logging();     // print logging messages to usb?
- 
+  printf("\n\n\n\nPTS logging = %d\n", logging_enabled);
+  logging_enabled = TRUE; 
   if ( logging_enabled )
-    printf("\n\n\nPTS Starting (%u)", ++restarts);
+    printf("\n\n\nPicoPTS Starting (%u)\n", ++restarts);
 
-
-
+  // local tests
+  loopback_test();
+  longjmp(jbuf, 0);
+ 
   // power cycle 920M to reset it
+  puts("Powering off");
   set_power_off();
   sleep_ms(1000); // give 920M time to respond
+  puts("Powering on");
   set_power_on();
 
-  // run tests
+  // remote tests
   reader_test();
   //punch_test();
     
@@ -264,6 +274,43 @@ int main() {
 the development phase of pico900.  They will not be used in the operational
 system */
 
+void loopback_test()
+{
+  UINT32 cycles = 50000, errors, ch;
+  absolute_time_t start;
+  UINT64 time_in_us;
+  
+  puts("picopts loopback test");
+
+  start = get_absolute_time();
+  for ( UINT32 i = 0 ; i < cycles ; i++ )
+    {
+      errors = 0;
+      for ( UINT32 j = 0 ; j < 256 ; j++ )
+	{
+	  //
+	  gpio_put_masked(RDR_PINS_MASK, j<<RDR_1_PIN); // write 8 bits
+	  busy_wait_us(0);
+	  ch = (gpio_get_all() >> PUN_1_PIN) & 255; // read 8 bits
+	  if ( ch != j )
+	    {
+	      printf("Cycle %6d,%3d: sent %3d (%4o), got %3d (%4o)\n",
+		     i, j, j, j, ch, ch);
+	      if ( ++errors > 10 )
+		{
+		  sleep_ms(10000);
+		  puts("Giving up after errors");
+		  return;
+		}
+	    }
+	}
+      }
+  time_in_us = absolute_time_diff_us(start, get_absolute_time());
+  
+  printf("Loopback test complete after %d cycles, %.1f uS per cycle\n",
+	 cycles, ((float) time_in_us) / ((float) (cycles * 256)));
+}
+	
 void reader_test()
 {
   puts("Reader test starting");
@@ -312,6 +359,61 @@ void punch_test()
     }
   puts("Punch test complete");
 }
+
+void in_signal_test()
+{
+  static int cycle = 0;
+  puts("In Signal Test");
+  while ( TRUE )
+    {
+      printf("%PicoPTS: %4d: RDRREQ %d PUNREQ %d TTYSEL %d PUNCH %3d\n",
+	     cycle++,
+             gpio_get(RDRREQ_PIN),
+             gpio_get(PUNREQ_PIN),
+	     gpio_get(TTYSEL_PIN),
+             gpio_get(PUN_1_PIN)                 |
+	              (gpio_get(PUN_2_PIN)<<1)   |
+	              (gpio_get(PUN_4_PIN)<<2)   |
+	              (gpio_get(PUN_8_PIN)<<3)   |
+	              (gpio_get(PUN_16_PIN)<<4)  |
+	              (gpio_get(PUN_32_PIN)<<5)  |
+	              (gpio_get(PUN_64_PIN)<<6)  |
+	              (gpio_get(PUN_128_PIN)<<7));
+      sleep_ms(1000);
+    }
+}
+
+void out_signal_test()
+{
+  static int cycle = 0;
+  puts("Out Signal Test");
+  while ( TRUE )
+    {
+      printf("PTS %4d\n", cycle++);
+      gpio_put(RDR_1_PIN, 1);     sleep_ms(1200);
+      gpio_put(RDR_2_PIN, 1);     sleep_ms(1200);
+      gpio_put(RDR_4_PIN, 1);     sleep_ms(1200);
+      gpio_put(RDR_8_PIN, 1);     sleep_ms(1200);
+      gpio_put(RDR_16_PIN, 1);    sleep_ms(1200);
+      gpio_put(RDR_32_PIN, 1);    sleep_ms(1200);
+      gpio_put(RDR_64_PIN, 1);    sleep_ms(1200);
+      gpio_put(RDR_128_PIN, 1);   sleep_ms(1200);
+      gpio_put(NOPOWER_PIN, 1);   sleep_ms(1200);
+      gpio_put(ACK_PIN, 1);       sleep_ms(1200);
+      gpio_put(II_AUTO_PIN, 1);   sleep_ms(1200);
+      gpio_put(RDR_1_PIN, 0);
+      gpio_put(RDR_2_PIN, 0);
+      gpio_put(RDR_4_PIN, 0);
+      gpio_put(RDR_8_PIN, 0);
+      gpio_put(RDR_16_PIN, 0);
+      gpio_put(RDR_32_PIN, 0);
+      gpio_put(RDR_64_PIN, 0);
+      gpio_put(RDR_128_PIN, 0);
+      gpio_put(NOPOWER_PIN, 0);
+      gpio_put(ACK_PIN, 0);
+      gpio_put(II_AUTO_PIN, 0);    sleep_ms(1200);
+    }
+}  
 
 
 /**********************************************************/
