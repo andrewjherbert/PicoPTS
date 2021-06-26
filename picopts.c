@@ -1,7 +1,6 @@
-
 // Elliott 900 Paper Tape Station  emulator for Raspberry Pi Pico
 
-// Copyright (c) Andrew Herbert - 23/05/2021
+// Copyright (c) Andrew Herbert - 26/06/2021
 
 // MIT Licence.
 
@@ -20,7 +19,7 @@
 //
 // RDRReq_PIN, high signals a reader request.  The paper tape
 // station is expected to load 8 bits of data on pins RDR_1_PIN
-// (lsb) to  RDR_128_PIN (msb) and then raise ACK-PIN high for
+// (lsb) to RDR_128_PIN (msb) and then raise ACK-PIN high for
 // approximately 5uS to indicate the input data is ready. Once
 // the computer has read in the data it lowers RDRReq-PIN to
 // signal transfer complete.  
@@ -86,27 +85,13 @@
 
 
 #include <stdio.h>
-#include <pico/stdlib.h>
-#include <hardware/gpio.h>
-#include <pico/binary_info.h>
-#include <tusb.h>
+#include <inttypes.h>
+#include "pico/stdlib.h"
+#include "hardware/gpio.h"
+#include "pico/binary_info.h"
+#include "tusb.h"
+#include "pico/multicore.h"
 #include <setjmp.h>
-
-// Each 900 18 bit word is stored as a 32 bit unsigned value.
-// For some operations we compute with a double word so we
-// use 64 bit unsigned quantities for these. Arithmetic is
-// performed using 32 and 64 bit integers.
-
-// Address calculations 16 bit unsigned arithmetic is used.
-
-// Input/output uses 8 bit characters.
-
-typedef int_fast32_t   INT32;
-typedef int_fast64_t   INT64;
-typedef uint_fast8_t   UINT8;
-typedef uint_fast16_t  UINT16;
-typedef uint_fast32_t  UINT32;
-typedef uint_fast64_t  UINT64;
 
 
 /**********************************************************/
@@ -117,8 +102,8 @@ typedef uint_fast64_t  UINT64;
 #define TRUE  1
 #define FALSE 0
 
-// Store size
-#define STORE_SIZE 8192
+// Limit on polling loops
+#define POLL_LIMIT 2000
 
 // GPIO pins
 
@@ -165,48 +150,72 @@ typedef uint_fast64_t  UINT64;
 #define IN_PINS  11 // count of input pins
 #define OUT_PINS 12 // count of output pins
 
+#define READ  1 // return values from wait_for_request
+#define PUNCH 2
+
+#define REQUEST_FAIL       2
+#define REQUEST_END_FAIL   3
+#define LOGGING_FAIL       4
+#define TEST_FAIL          5
+#define EXIT_FAIL          6
+
 
 /**********************************************************/
 /*                         GLOBALS                        */
 /**********************************************************/
 
 
-const UINT8 out_pins[OUT_PINS] = { NOPOWER_PIN, ACK_PIN, II_AUTO_PIN, LED_PIN, 
-		                   RDR_1_PIN, RDR_2_PIN, RDR_4_PIN, RDR_8_PIN,
-				   RDR_16_PIN, RDR_32_PIN, RDR_64_PIN,
-				   RDR_128_PIN };
+const uint32_t out_pins[OUT_PINS] =
+  { NOPOWER_PIN, ACK_PIN, II_AUTO_PIN, LED_PIN, 
+    RDR_1_PIN, RDR_2_PIN, RDR_4_PIN, RDR_8_PIN,
+    RDR_16_PIN, RDR_32_PIN, RDR_64_PIN,
+    RDR_128_PIN };
 
-const UINT8 in_pins[IN_PINS] = { RDRREQ_PIN, PUNREQ_PIN, TTYSEL_PIN, PUN_1_PIN,
-				 PUN_2_PIN, PUN_4_PIN, PUN_8_PIN, PUN_16_PIN,
-				 PUN_32_PIN, PUN_64_PIN, PUN_128_PIN };
+const uint32_t in_pins[IN_PINS] =
+  { RDRREQ_PIN, PUNREQ_PIN, TTYSEL_PIN, PUN_1_PIN,
+    PUN_2_PIN, PUN_4_PIN, PUN_8_PIN, PUN_16_PIN,
+    PUN_32_PIN, PUN_64_PIN, PUN_128_PIN };
 
-UINT8 logging_enabled   = 1; // 1 = enable logging, 0 = disable logging to usb
+uint32_t logging_enabled   = 0; // 1 = enable logging,
+                                // 0 = disable logging to usb
+                                // must default to 0 until set by reference to
+                                // LOG_PIN
 
+uint32_t read_request_bit   = 1 << RDRREQ_PIN;
+uint32_t punch_request_bit  = 1 << PUNREQ_PIN;
 
-static jmp_buf jbuf;  // used by setjmp in main
+static jmp_buf jbuf;            // used by setjmp in main
+
+static uint64_t cycles;         // used in diagnostic code
+static uint32_t max_poll = 0;
+static uint32_t monitoring = FALSE;
 
 
 /**********************************************************/
 /*                         FUNCTIONS                      */
 /**********************************************************/
 
-static inline void   set_up_gpios();               // initialize GPIO interface 
-static inline void   led_on();                     // turn onboard LED on
-static inline void   led_off();                    // turn onboard LED off
-static inline UINT8  logging();                    // TRUE is logging enabled
-static inline UINT8  ack();                        // signal an ACK
-static inline void   set_power_on();               // set NOPOWER LOW
-static inline void   set_power_off();              // set NOPOWER HIGH
-static inline UINT8  wait_for_request();           // wait for RDR or PUN request
-static inline void   put_pts_ch(const UINT8 ch);   // send from paper tape reader
-static inline UINT8  get_pts_ch();                 // receive from paper tape punch
-static inline UINT8  Wait_for_request();           // wait for reader or punch request
-static inline UINT8  teletype();                   // TRUE if teletype selected
+static  void     set_up_gpios();               // initialize GPIO interface 
+static  void     led_on();                     // turn onboard LED on
+static  void     led_off();                    // turn onboard LED off
+static  uint32_t logging();                    // TRUE is logging enabled
+static  uint32_t ack();                        // signal an ACK
+static  void     set_power_on();               // set NOPOWER LOW
+static  void     set_power_off();              // set NOPOWER HIGH
+static  uint32_t wait_for_request();           // wait for RDR or PUN request
+static  void     put_pts_ch(const uint32_t ch);// send from paper tape reader
+static  uint32_t get_pts_ch();                 // receive from paper tape punch
+static  uint32_t wait_for_request();           // wait for reader or punch request
+static  void     wait_for_no_request();        // wait until request cleared
+static  uint32_t teletype();                   // TRUE if teletype selected
+static void      master();                     // code to run in core1
 
-void loopback_test();
-void reader_test();
-void punch_test();
-
+// Test routines used during development only 
+static void signals();
+static void reader_test(uint64_t max_cycles);
+static void punch_test(uint64_t max_cycles);
+static void master();
+static void monitor();
 
 
 /**********************************************************/
@@ -215,206 +224,145 @@ void punch_test();
 
 int main() {
 
-  static UINT32 restarts = 0;
+  int32_t fail_code;
 
   bi_decl(bi_program_description("Elliott 900 PTS Emulator by Andrew Herbert"));
 
   stdio_init_all(); // initialise stdio
   set_up_gpios(); // configure interface to outside world
 
-  // long jump to here resets simulation
-  setjmp(jbuf);
-
-  // 4 blinks to signal waking up
-  for ( UINT8 i = 1 ; i <= 4 ; i++ )
-    {
-      led_on();
-      sleep_ms(250);
-      led_off();
-      sleep_ms(250);
-    }
-    
-  while ( !tud_cdc_connected() ) sleep_ms(100); // wait for usb to wake up
-
   // set local flags based on external inputs
   logging_enabled = logging();     // print logging messages to usb?
-  printf("\n\n\n\nPTS logging = %d\n", logging_enabled);
-  logging_enabled = TRUE; 
+
   if ( logging_enabled )
-    printf("\n\n\nPicoPTS Starting (%u)\n", ++restarts);
+    {
+      while ( !tud_cdc_connected() )
+	sleep_ms(500); // wait for usb to wake up
+      puts("\n\n\nPicoPTS Starting");
+    }
 
-  // local tests
-  loopback_test();
-  longjmp(jbuf, 0);
- 
-  // power cycle 920M to reset it
-  puts("Powering off");
-  set_power_off();
-  sleep_ms(1000); // give 920M time to respond
-  puts("Powering on");
-  set_power_on();
-
-  // remote tests
-  reader_test();
-  //punch_test();
-    
-  longjmp(jbuf, 0);
+  // long jump to here on error
+  if ( fail_code = setjmp(jbuf) ) // test if a longjmp occurred
+    {
+      monitoring = FALSE; // disable conflicting monitoring i/o
+      set_power_off(); // and stop 920M
+      sleep_ms(2000); // allow system to quiesce
+      if ( logging_enabled )
+	printf("PicoPTS halted after error with code %d"
+	       " - push reset to restart\n",fail_code);
+      while ( TRUE )  // loop until reset flashing the code
+	{
+	  sleep_ms(1000);
+	  for ( uint32_t j = 1 ; j <= fail_code ; j++ )
+	    {
+	      led_on(); sleep_ms(250);led_off(); sleep_ms(100);
+	    }
+	}
+    }
   
+  // Reset 920M
+  gpio_put(ACK_PIN, 0);
+  if ( logging_enabled ) puts("Power on 920M now!");
+  set_power_off();
+  sleep_ms(5000); // wait for 920M
+  if ( logging_enabled ) puts("Resetting 920M");
+  set_power_on();
+  
+  multicore_launch_core1(master);
+  monitor();
+  longjmp(jbuf, EXIT_FAIL); // STOP HERE
+
+  // start PTS  emulation
   while ( TRUE ) // run emulation for ever
   {
-    led_on(); // set LED to indicate running
-
     /* main loop */
     
     // will only end up here on a failure or reset, in either case, restart
   }
 }
 
-/* The following three test routines are only for use during
-the development phase of pico900.  They will not be used in the operational
-system */
-
-void loopback_test()
+static void master()
 {
-  UINT32 cycles = 50000, errors, ch;
-  absolute_time_t start;
-  UINT64 time_in_us;
-  
-  puts("picopts loopback test");
-
-  start = get_absolute_time();
-  for ( UINT32 i = 0 ; i < cycles ; i++ )
+  while ( TRUE )
     {
-      errors = 0;
-      for ( UINT32 j = 0 ; j < 256 ; j++ )
-	{
-	  //
-	  gpio_put_masked(RDR_PINS_MASK, j<<RDR_1_PIN); // write 8 bits
-	  busy_wait_us(0);
-	  ch = (gpio_get_all() >> PUN_1_PIN) & 255; // read 8 bits
-	  if ( ch != j )
-	    {
-	      printf("Cycle %6d,%3d: sent %3d (%4o), got %3d (%4o)\n",
-		     i, j, j, j, ch, ch);
-	      if ( ++errors > 10 )
-		{
-		  sleep_ms(10000);
-		  puts("Giving up after errors");
-		  return;
-		}
-	    }
-	}
-      }
-  time_in_us = absolute_time_diff_us(start, get_absolute_time());
-  
-  printf("Loopback test complete after %d cycles, %.1f uS per cycle\n",
-	 cycles, ((float) time_in_us) / ((float) (cycles * 256)));
-}
-	
-void reader_test()
-{
-  puts("Reader test starting");
-  for ( UINT32 c = 0 ; c < 10000 ; c++ )
-    {
-      printf("Cycle %u (%u)\n", c, c%256);
-      if ( wait_for_request() != 0 )
-	{
-	  puts("Got punch request in reader test!");
-	  longjmp(jbuf, 0);
-	}
-				       
-      put_pts_ch(c%256);
-      sleep_us(10);
+      punch_test(10000000);
+      sleep_ms(1);
+      reader_test(10000000);
     }
-  puts("Reader tests complete");
 }
 
-
-void punch_test()
+static inline void reader_test(uint64_t max)
 {
-  UINT8 errors = 0;
-  puts("Punch test starting");
-  // simple test loop emulating read
-  for ( UINT32 c = 0 ; c < 1000 ; c++ )
+  if ( logging_enabled )
+    puts("PicoPTS reader test starting");
+  else
     {
-      printf("Cycle %u (%u)\n", c, c%256);
-      int ch;
-      if ( wait_for_request() != 1 )
+      puts("PicoPTS reader test - no logging - stopping");
+      longjmp(jbuf, LOGGING_FAIL);
+      /* NOT REACHED */
+    }
+  for ( cycles = 0 ; cycles < max ; cycles++ )
+    {
+      if ( wait_for_request() != READ )
 	{
-	  puts("Got read request in punch test!");
-	  longjmp(jbuf,0);
+	  printf("Got PUNREQ in reader test at cycle %"PRIu64"\n", cycles);
+	  longjmp(jbuf, REQUEST_FAIL);
+	  /* NOT REACHED */
 	}
-	ch = get_pts_ch(c);
-      if  (ch != (c%256) ) 
+      put_pts_ch(cycles&255);
+    }
+  puts("Reader test complete");
+}
+
+static inline void punch_test(uint64_t max)
+{
+  if ( logging_enabled )
+    puts("PicoPTS punch test starting");
+  else
+    {
+      puts("PicoPTS punch test - no logging - stopped");
+      longjmp(jbuf, LOGGING_FAIL);
+      /* NOT REACHED */
+    }
+  for ( cycles = 0 ; cycles < max; cycles++ )
+    {
+      uint32_t got, expected = cycles&255;
+      if ( wait_for_request() != PUNCH )
 	{
-	  printf("Failed after %d got %d, expected %d\n",c, ch, c%256);
-          c++;
-	  if ( ++errors > 10 )
-	    {
-	      puts("Giving up");
-	      longjmp(jbuf, 0);
-	    }
-	 }
-      sleep_us(10);
+	  printf("Got RDRREQUEST in punch test at cycle %"PRIu64"\n",
+		 cycles);
+	  longjmp(jbuf, REQUEST_FAIL);
+	  /* NOT REACHED */
+	}
+      got = get_pts_ch(); 
+      if  ( got != expected )
+	{
+	  printf("Failed after %"PRIu64" cycles got %u, expected %u\n",
+		 cycles, got, expected);
+	  longjmp(jbuf, TEST_FAIL);
+	  /* NOT REACHED */
+	}
     }
   puts("Punch test complete");
 }
 
-void in_signal_test()
+static inline void monitor()
 {
-  static int cycle = 0;
-  puts("In Signal Test");
-  while ( TRUE )
+  monitoring = TRUE;
+  for ( uint32_t tick = 1 ; ; tick++ )
     {
-      printf("%PicoPTS: %4d: RDRREQ %d PUNREQ %d TTYSEL %d PUNCH %3d\n",
-	     cycle++,
-             gpio_get(RDRREQ_PIN),
-             gpio_get(PUNREQ_PIN),
-	     gpio_get(TTYSEL_PIN),
-             gpio_get(PUN_1_PIN)                 |
-	              (gpio_get(PUN_2_PIN)<<1)   |
-	              (gpio_get(PUN_4_PIN)<<2)   |
-	              (gpio_get(PUN_8_PIN)<<3)   |
-	              (gpio_get(PUN_16_PIN)<<4)  |
-	              (gpio_get(PUN_32_PIN)<<5)  |
-	              (gpio_get(PUN_64_PIN)<<6)  |
-	              (gpio_get(PUN_128_PIN)<<7));
-      sleep_ms(1000);
+      for ( uint32_t i = 0 ; i < 5 ; i++ )
+	{
+	  led_on();
+	  sleep_ms(1000);
+          led_off();
+	  sleep_ms(1000);
+	}
+      if ( monitoring && logging_enabled )
+	printf("Time %7u secs %10"PRIu64" cycles, max poll %4u\n",
+	       tick*10, cycles, max_poll);
     }
 }
-
-void out_signal_test()
-{
-  static int cycle = 0;
-  puts("Out Signal Test");
-  while ( TRUE )
-    {
-      printf("PTS %4d\n", cycle++);
-      gpio_put(RDR_1_PIN, 1);     sleep_ms(1200);
-      gpio_put(RDR_2_PIN, 1);     sleep_ms(1200);
-      gpio_put(RDR_4_PIN, 1);     sleep_ms(1200);
-      gpio_put(RDR_8_PIN, 1);     sleep_ms(1200);
-      gpio_put(RDR_16_PIN, 1);    sleep_ms(1200);
-      gpio_put(RDR_32_PIN, 1);    sleep_ms(1200);
-      gpio_put(RDR_64_PIN, 1);    sleep_ms(1200);
-      gpio_put(RDR_128_PIN, 1);   sleep_ms(1200);
-      gpio_put(NOPOWER_PIN, 1);   sleep_ms(1200);
-      gpio_put(ACK_PIN, 1);       sleep_ms(1200);
-      gpio_put(II_AUTO_PIN, 1);   sleep_ms(1200);
-      gpio_put(RDR_1_PIN, 0);
-      gpio_put(RDR_2_PIN, 0);
-      gpio_put(RDR_4_PIN, 0);
-      gpio_put(RDR_8_PIN, 0);
-      gpio_put(RDR_16_PIN, 0);
-      gpio_put(RDR_32_PIN, 0);
-      gpio_put(RDR_64_PIN, 0);
-      gpio_put(RDR_128_PIN, 0);
-      gpio_put(NOPOWER_PIN, 0);
-      gpio_put(ACK_PIN, 0);
-      gpio_put(II_AUTO_PIN, 0);    sleep_ms(1200);
-    }
-}  
-
 
 /**********************************************************/
 /*                    PAPER TAPE SYSTEM                   */
@@ -424,22 +372,22 @@ void out_signal_test()
 /*  Output a character to paper tape station */ 
 /*  i.e., punch or tty output                */
 
-static inline void put_pts_ch(const UINT8 ch)
+static inline void put_pts_ch(const uint32_t ch)
 {
-  puts("put_pts_ch");
   gpio_put_masked(RDR_PINS_MASK, ch << RDR_1_PIN); // write 8 bits
   ack();
+  wait_for_no_request(); // wait for request to clear
 }
 
 /* Input a character from the paper tape station */
 /* i.e., reader or tty input                     */
 
-static inline UINT8 get_pts_ch()
+static inline uint32_t get_pts_ch()
 {
-  static UINT8 ch;
-  puts("get_pts_ch");
-  ch = (gpio_get_all() >> PUN_1_PIN) & 255; // write 8 bits
+  uint32_t ch;
+  ch = (gpio_get_all() >> PUN_1_PIN) & 255; // read 8 bits
   ack();
+  wait_for_no_request();
   return(ch);
 }
 
@@ -449,21 +397,23 @@ static inline UINT8 get_pts_ch()
 /**********************************************************/
 
 
-/*  initialize GPIOs - n.b. no point in pulling up/down inputs */
+/*  initialize GPIOs */
 
 static inline void set_up_gpios()
 {
-  UINT32 in_pins_mask = 0, out_pins_mask = 0;
+  uint32_t in_pins_mask = 0, out_pins_mask = 0;
   // calculate masks
-  for ( UINT8 i = 0; i < IN_PINS;  i++ ) in_pins_mask  |= (1 << in_pins[i]);
-  for ( UINT8 i = 0; i < OUT_PINS; i++ ) out_pins_mask |= (1 << out_pins[i]);
+  for ( uint32_t i = 0; i < IN_PINS;  i++ ) in_pins_mask  |= (1 << in_pins[i]);
+  for ( uint32_t i = 0; i < OUT_PINS; i++ ) out_pins_mask |= (1 << out_pins[i]);
   // initialize GPIOs
   gpio_init_mask(in_pins_mask | out_pins_mask);
   // set up GPIO directions
-  gpio_set_dir_masked(in_pins_mask | out_pins_mask,
-		      out_pins_mask); 
-  // set all outputs 0
-  gpio_clr_mask(out_pins_mask);
+  gpio_set_dir_masked(in_pins_mask | out_pins_mask, out_pins_mask);
+  gpio_put_masked(out_pins_mask, 0); // initialize all GPIOs to LOW
+  // set NOPOWER high
+  gpio_put(NOPOWER_PIN, 1);
+  // set pull up on LOG_PIN
+  gpio_pull_up(LOG_PIN);
 }
 
 /* LED blinking */
@@ -480,50 +430,81 @@ static inline void led_off()
 
 /* Read logging status */
 
-static inline UINT8 logging() {
+static inline uint32_t logging() {
   return gpio_get(LOG_PIN);
 }
 
 /* Power status signalling */
 
-static inline void set_power_on() {
+static inline void set_power_on()
+{
   gpio_put(NOPOWER_PIN, 0);
 }
 
-static inline void set_power_off() {
+static inline void set_power_off()
+{
   gpio_put(NOPOWER_PIN, 1);
 }
 
 /* Acknowledge a transfer */
 
-static inline UINT8 ack() {
+static inline uint32_t ack()
+{
   gpio_put(ACK_PIN, 1);
-  sleep_us(5);
+  busy_wait_us_32(4);
   gpio_put(ACK_PIN, 0);
 }
 
 /* Wait for transfer request */
 
-static inline UINT8 wait_for_request()
+static inline uint32_t wait_for_request()
 {
-  UINT32 pins;
-  while ( TRUE )
+  uint32_t pins;
+  while ( !((pins = gpio_get_all()) &
+	   (read_request_bit | punch_request_bit)) )
+    busy_wait_us_32(1);
+  if ( (pins & read_request_bit) )
+    return READ;
+  else if ( (pins & punch_request_bit)  )
+    return PUNCH;
+}
+
+/* Wait for request to clear */
+
+static inline void wait_for_no_request()
+{
+  uint32_t count = 0, pins;
+  while ( ((pins = gpio_get_all())
+	   & (read_request_bit | punch_request_bit)) )
     {
-      if ( gpio_get(RDRREQ_PIN) == 1 )
-        return 0;
-      else if (gpio_get(PUNREQ_PIN) == 1 )
-        return 1;
-      sleep_us(1);
+      if ( count++ > max_poll ) max_poll = count;
+      if ( count > POLL_LIMIT )
+        {
+	  if ( logging_enabled )
+	    {
+	      printf("Time out waiting for %s%s request to clear "
+		     "at cycle %"PRIu64" after polling %u times\n",
+		     ( (pins & read_request_bit)  ) ? "RDRREQ" : "",
+		     ( (pins & punch_request_bit) ) ? "PUNREQ" : "",
+		     cycles, --count);
+	    }
+	    longjmp(jbuf, REQUEST_END_FAIL);
+	    /* NOT REACHED */
+        }
+      busy_wait_us_32(1);
     }
 }
 
+
 /* Status of TTYSel */
-static inline UINT8 teletype()
+
+static inline uint32_t teletype()
 {
   return gpio_get(TTYSEL_PIN);
 }
 
-	
-       
-
-
+static void signals()
+{
+  printf("RDRREQ %u PUNREQ %u TTYSEL %u\n", gpio_get(RDRREQ_PIN),
+	 gpio_get(PUNREQ_PIN), gpio_get(TTYSEL_PIN));
+}
