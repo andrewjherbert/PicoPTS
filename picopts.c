@@ -208,13 +208,12 @@ static  uint32_t get_pts_ch();                 // receive from paper tape punch
 static  uint32_t wait_for_request();           // wait for reader or punch request
 static  void     wait_for_no_request();        // wait until request cleared
 static  uint32_t teletype();                   // TRUE if teletype selected
-static void      master();                     // code to run in core1
+static void      pts_emulation();              // paper tape station emulation
 
 // Test routines used during development only 
 static void signals();
 static void reader_test(uint64_t max_cycles);
 static void punch_test(uint64_t max_cycles);
-static void master();
 static void monitor();
 
 
@@ -268,7 +267,7 @@ int main() {
   if ( logging_enabled ) puts("Resetting 920M");
   set_power_on();
   
-  multicore_launch_core1(master);
+  multicore_launch_core1(pts_emulation);
   monitor();
   longjmp(jbuf, EXIT_FAIL); // STOP HERE
 
@@ -281,15 +280,11 @@ int main() {
   }
 }
 
-static void master()
-{
-  while ( TRUE )
-    {
-      punch_test(10000000);
-      sleep_ms(1);
-      reader_test(10000000);
-    }
-}
+
+/**********************************************************/
+/*                         TESTING                        */
+/**********************************************************/
+
 
 static inline void reader_test(uint64_t max)
 {
@@ -367,6 +362,17 @@ static inline void monitor()
 /**********************************************************/
 /*                    PAPER TAPE SYSTEM                   */
 /**********************************************************/
+
+
+static void pts_emulation()
+{
+  while ( TRUE )
+    {
+      punch_test(10000000);
+      sleep_ms(1);
+      reader_test(10000000);
+    }
+}
 
 
 /*  Output a character to paper tape station */ 

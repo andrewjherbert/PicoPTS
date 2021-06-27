@@ -1077,9 +1077,9 @@ Discarded input sections
                 0x00000000        0x1 CMakeFiles/picopts.dir/home/ajh2/pico/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj
  .bss.lockout_mutex
                 0x00000000        0x8 CMakeFiles/picopts.dir/home/ajh2/pico/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj
- .text          0x00000000        0x0 /tmp/ccIzo6se.o
- .data          0x00000000        0x0 /tmp/ccIzo6se.o
- .bss           0x00000000        0x0 /tmp/ccIzo6se.o
+ .text          0x00000000        0x0 /tmp/ccyy4Gtc.o
+ .data          0x00000000        0x0 /tmp/ccyy4Gtc.o
+ .bss           0x00000000        0x0 /tmp/ccyy4Gtc.o
  .data          0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/libgcc.a(_dvmd_tls.o)
  .bss           0x00000000        0x0 /usr/lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/libgcc.a(_dvmd_tls.o)
  .text          0x00000000       0x10 /usr/lib/gcc/arm-none-eabi/7.3.1/../../../arm-none-eabi/lib/thumb/v6-m/libc.a(lib_a-atexit.o)
@@ -1302,7 +1302,7 @@ LOAD /usr/lib/gcc/arm-none-eabi/7.3.1/../../../arm-none-eabi/lib/thumb/v6-m/crt0
 .boot2          0x10000000      0x100
                 0x10000000                __boot2_start__ = .
  *(.boot2)
- .boot2         0x10000000      0x100 /tmp/ccIzo6se.o
+ .boot2         0x10000000      0x100 /tmp/ccyy4Gtc.o
                 0x10000100                __boot2_end__ = .
                 0x00000001                ASSERT (((__boot2_end__ - __boot2_start__) == 0x100), ERROR: Pico second stage bootloader must be 256 bytes in size)
 
@@ -1368,7 +1368,8 @@ LOAD /usr/lib/gcc/arm-none-eabi/7.3.1/../../../arm-none-eabi/lib/thumb/v6-m/crt0
                 0x100002c0                _init
  *(EXCLUDE_FILE(*libm.a: *libc.a:*lib_a-mem*.o *libgcc.a:) .text*)
  .text          0x100002c4       0x98 /usr/lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/crtbegin.o
- .text.master   0x1000035c      0x2fc CMakeFiles/picopts.dir/picopts.c.obj
+ .text.pts_emulation
+                0x1000035c      0x2fc CMakeFiles/picopts.dir/picopts.c.obj
  .text.startup.main
                 0x10000658      0x1b0 CMakeFiles/picopts.dir/picopts.c.obj
                 0x10000658                main
@@ -1957,12 +1958,12 @@ LOAD /usr/lib/gcc/arm-none-eabi/7.3.1/../../../arm-none-eabi/lib/thumb/v6-m/crt0
 
 .rodata         0x10008748      0x7d0
  *(EXCLUDE_FILE(*libm.a: *libc.a:*lib_a-mem*.o *libgcc.a:) .rodata*)
- .rodata.__bi_229.7518
+ .rodata.__bi_228.7517
                 0x10008748        0xc CMakeFiles/picopts.dir/picopts.c.obj
  .rodata.main.str1.4
                 0x10008754       0xa7 CMakeFiles/picopts.dir/picopts.c.obj
  *fill*         0x100087fb        0x1 
- .rodata.master.str1.4
+ .rodata.pts_emulation.str1.4
                 0x100087fc      0x1a9 CMakeFiles/picopts.dir/picopts.c.obj
                                 0x1ad (size before relaxing)
  *fill*         0x100089a5        0x3 
@@ -2052,7 +2053,7 @@ LOAD /usr/lib/gcc/arm-none-eabi/7.3.1/../../../arm-none-eabi/lib/thumb/v6-m/crt0
 
 .binary_info    0x10008f18       0x24
  *(.binary_info.keep.*)
- .binary_info.keep.__bi_ptr229
+ .binary_info.keep.__bi_ptr228
                 0x10008f18        0x4 CMakeFiles/picopts.dir/picopts.c.obj
  .binary_info.keep.__bi_ptr22
                 0x10008f1c        0x4 CMakeFiles/picopts.dir/home/ajh2/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
@@ -2401,7 +2402,7 @@ LOAD CMakeFiles/picopts.dir/home/ajh2/pico/pico-sdk/src/rp2_common/pico_fix/rp20
 LOAD CMakeFiles/picopts.dir/home/ajh2/pico/pico-sdk/src/rp2_common/pico_unique_id/unique_id.c.obj
 LOAD CMakeFiles/picopts.dir/home/ajh2/pico/pico-sdk/src/rp2_common/hardware_flash/flash.c.obj
 LOAD CMakeFiles/picopts.dir/home/ajh2/pico/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj
-LOAD /tmp/ccIzo6se.o
+LOAD /tmp/ccyy4Gtc.o
 LOAD /usr/lib/gcc/arm-none-eabi/7.3.1/../../../arm-none-eabi/lib/thumb/v6-m/libstdc++.a
 LOAD /usr/lib/gcc/arm-none-eabi/7.3.1/../../../arm-none-eabi/lib/thumb/v6-m/libm.a
 START GROUP
@@ -2518,7 +2519,7 @@ OUTPUT(picopts.elf elf32-littlearm)
  .ARM.attributes
                 0x000008a6       0x32 CMakeFiles/picopts.dir/home/ajh2/pico/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj
  .ARM.attributes
-                0x000008d8       0x22 /tmp/ccIzo6se.o
+                0x000008d8       0x22 /tmp/ccyy4Gtc.o
  .ARM.attributes
                 0x000008fa       0x1e /usr/lib/gcc/arm-none-eabi/7.3.1/thumb/v6-m/libgcc.a(_dvmd_tls.o)
  .ARM.attributes
