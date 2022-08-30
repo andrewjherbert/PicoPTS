@@ -14,8 +14,8 @@ target_link_libraries(picopts
   pico_stdlib
   pico_multicore)
 
-pico_enable_stdio_usb(picopts 1)
-pico_enable_stdio_uart(picopts 0)
+pico_enable_stdio_usb(picopts 0)
+pico_enable_stdio_uart(picopts 1)
 
 pico_add_extra_outputs(picopts)
 

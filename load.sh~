@@ -1,2 +1,3 @@
-#!/bin/sh
-openocd -f interface/raspberrypi-swd.cfg -f target/rp2040.cfg -c "program /home/ajh2/pico/pico900/build/pico900.elf verify reset exit"
+#!/bin/bash
+export PICOPROBE_SERIAL=E6605481DB7E6235
+sudo openocd -f picopts.cfg -f interface/picoprobe.cfg -f target/rp2040.cfg -c "program /home/ajh2/pico/PicoPTS/build/picopts.elf verify reset exit"

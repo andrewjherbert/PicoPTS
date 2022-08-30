@@ -1,2 +1,6 @@
 #!/bin/sh
-minicom -b 115200 -o -D /dev/ttyAMA1
+lxterminal -e "python3 ~/pico/PicoPTS/operator.py /dev/ttyACM0 115200"
+#lxterminal -e "minicom -D /dev/ttyACM0 -b115200"
+
+
+

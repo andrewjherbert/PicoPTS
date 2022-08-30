@@ -1,0 +1,3 @@
+/home/ajh2/pico/PicoPTS/build/pioasm/CMakeFiles/rebuild_cache.dir
+/home/ajh2/pico/PicoPTS/build/pioasm/CMakeFiles/pioasm.dir
+/home/ajh2/pico/PicoPTS/build/pioasm/CMakeFiles/edit_cache.dir
