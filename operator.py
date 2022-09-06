@@ -2,7 +2,7 @@
 #
 # 900 Computer Operator
 #
-# Derived from pyserial miniterm by Andrew Herbert 06/09/2022
+# Derived from pyserial miniterm by Andrew Herbert 08/09/2022
 #
 # Very simple serial terminal
 #
@@ -21,11 +21,8 @@ import time
 
 import serial
 from serial.tools.list_ports import comports
-from serial.tools import hexlify_codec
 
 # pylint: disable=wrong-import-order,wrong-import-position
-
-codecs.register(lambda c: hexlify_codec.getregentry() if c == 'hexlify' else None)
 
 try:
     raw_input
@@ -240,139 +237,6 @@ else:
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-class Transform(object):
-    """do-nothing: forward all data unchanged"""
-    def rx(self, text):
-        """text received from serial port"""
-        return text
-
-    def tx(self, text):
-        """text to be sent to serial port"""
-        return text
-
-    def echo(self, text):
-        """text to be sent but displayed on console"""
-        return text
-
-
-class CRLF(Transform):
-    """ENTER sends CR+LF"""
-
-    def tx(self, text):
-        return text.replace('\n', '\r\n')
-
-
-class CR(Transform):
-    """ENTER sends CR"""
-
-    def rx(self, text):
-        return text.replace('\r', '\n')
-
-    def tx(self, text):
-        return text.replace('\n', '\r')
-
-
-class LF(Transform):
-    """ENTER sends LF"""
-
-
-class NoTerminal(Transform):
-    """remove typical terminal control codes from input"""
-
-    REPLACEMENT_MAP = dict((x, 0x2400 + x) for x in range(32) if unichr(x) not in '\r\n\b\t')
-    REPLACEMENT_MAP.update(
-        {
-            0x7F: 0x2421,  # DEL
-            0x9B: 0x2425,  # CSI
-        })
-
-    def rx(self, text):
-        return text.translate(self.REPLACEMENT_MAP)
-
-    echo = rx
-
-
-class NoControls(NoTerminal):
-    """Remove all control codes, incl. CR+LF"""
-
-    REPLACEMENT_MAP = dict((x, 0x2400 + x) for x in range(32))
-    REPLACEMENT_MAP.update(
-        {
-            0x20: 0x2423,  # visual space
-            0x7F: 0x2421,  # DEL
-            0x9B: 0x2425,  # CSI
-        })
-
-
-class Printable(Transform):
-    """Show decimal code for all non-ASCII characters and replace most control codes"""
-
-    def rx(self, text):
-        r = []
-        for c in text:
-            if ' ' <= c < '\x7f' or c in '\r\n\b\t':
-                r.append(c)
-            elif c < ' ':
-                r.append(unichr(0x2400 + ord(c)))
-            else:
-                r.extend(unichr(0x2080 + ord(d) - 48) for d in '{:d}'.format(ord(c)))
-                r.append(' ')
-        return ''.join(r)
-
-    echo = rx
-
-
-class Colorize(Transform):
-    """Apply different colors for received and echo"""
-
-    def __init__(self):
-        # XXX make it configurable, use colorama?
-        self.input_color = '\x1b[37m'
-        self.echo_color = '\x1b[31m'
-
-    def rx(self, text):
-        return self.input_color + text
-
-    def echo(self, text):
-        return self.echo_color + text
-
-
-class DebugIO(Transform):
-    """Print what is sent and received"""
-
-    def rx(self, text):
-        sys.stderr.write(' [RX:{!r}] '.format(text))
-        sys.stderr.flush()
-        return text
-
-    def tx(self, text):
-        sys.stderr.write(' [TX:{!r}] '.format(text))
-        sys.stderr.flush()
-        return text
-
-
-# other ideas:
-# - add date/time for each newline
-# - insert newline after: a) timeout b) packet end character
-
-EOL_TRANSFORMATIONS = {
-    'crlf': CRLF,
-    'cr': CR,
-    'lf': LF,
-}
-
-TRANSFORMATIONS = {
-    'direct': Transform,    # no transformation
-    'default': NoTerminal,
-    'nocontrol': NoControls,
-    'printable': Printable,
-    'colorize': Colorize,
-    'debug': DebugIO,
-}
-
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def ask_for_port():
     """\
     Show a list of ports and ask the user for a choice. To make selection
@@ -405,24 +269,18 @@ class Miniterm(object):
     Handle special keys from the console to show menu etc.
     """
 
-    def __init__(self, serial_instance, echo=True, eol='crlf', filters=()):
+    def __init__(self, serial_instance):
         self.console = Console(self)
         self.serial = serial_instance
         self.echo = True
-        self.raw = True #- False
+        self.raw = True
         self.input_encoding = 'UTF-8'
         self.output_encoding = 'UTF-8'
-        self.eol = eol
-        self.filters = filters
-        self.update_transformations()
         self.exit_character = unichr(0x1d)  # GS/CTRL+]
         self.menu_character = unichr(0x14)  # Menu: CTRL+T
         self.alive = None
         self._reader_alive = None
         self.receiver_thread = None
-        self.rx_decoder = None
-        self.tx_decoder = None
-        self.tx_encoder = None
         self.reader_file = None # holds uploaded paper tape input
         self.reader_index = 0 # position of next character in reader_file if open
         self.punch_file = None # file to receive paper tape punch output
@@ -471,46 +329,9 @@ class Miniterm(object):
     def close(self):
         self.serial.close()
 
-    def update_transformations(self):
-        """take list of transformation classes and instantiate them for rx and tx"""
-        transformations = [EOL_TRANSFORMATIONS[self.eol]] + [TRANSFORMATIONS[f]
-                                                             for f in self.filters]
-        self.tx_transformations = [t() for t in transformations]
-        self.rx_transformations = list(reversed(self.tx_transformations))
-
-    def set_rx_encoding(self, encoding, errors='replace'):
-        """set encoding for received data"""
-        self.input_encoding = encoding
-        self.rx_decoder = codecs.getincrementaldecoder(encoding)(errors)
-
-    def set_tx_encoding(self, encoding, errors='replace'):
-        """set encoding for transmitted data"""
-        self.output_encoding = encoding
-        self.tx_encoder = codecs.getincrementalencoder(encoding)(errors)
-
     def dump_port_settings(self):
         """Write current settings to sys.stderr"""
-        sys.stderr.write("\n--- Settings: {p.name}  {p.baudrate},{p.bytesize},{p.parity},{p.stopbits}\n".format(
-            p=self.serial))
-        sys.stderr.write('--- RTS: {:8}  DTR: {:8} \n'.format(
-            ('active' if self.serial.rts else 'inactive'),
-            ('active' if self.serial.dtr else 'inactive'))) 
-        try:
-            sys.stderr.write('--- CTS: {:8}  DSR: {:8}  RI: {:8}  CD: {:8}\n'.format(
-                ('active' if self.serial.cts else 'inactive'),
-                ('active' if self.serial.dsr else 'inactive'),
-                ('active' if self.serial.ri else 'inactive'),
-                ('active' if self.serial.cd else 'inactive')))
-        except serial.SerialException:
-            # on RFC 2217 ports, it can happen if no modem state notification was
-            # yet received. ignore this error.
-            pass
-        sys.stderr.write('--- software flow control: {}\n'.format('active' if self.serial.xonxoff else 'inactive'))
-        sys.stderr.write('--- hardware flow control: {}\n'.format('active' if self.serial.rtscts else 'inactive'))
-        sys.stderr.write('--- serial input encoding: {}\n'.format(self.input_encoding))
-        sys.stderr.write('--- serial output encoding: {}\n'.format(self.output_encoding))
-        sys.stderr.write('--- EOL: {}\n'.format(self.eol.upper()))
-        sys.stderr.write('--- filters: {}\n'.format(' '.join(self.filters)))
+        sys.stderr.write("\n--- Settings: {p.name}  {p.baudrate},{p.bytesize},{p.parity},{p.stopbits}\n".format(p=self.serial))
 
     def add_parity(self, ch):
         """compute parity for 7 bit byte"""
@@ -526,13 +347,17 @@ class Miniterm(object):
         """read next character from paper tape, uploading a new file if necessary"""
         buffer = bytearray(b'0')
         warned = False
-        while True:
+        while self.alive:
             if self.reader_file:
                 # reader file available
                 if self.reader_index < len(self.reader_file):
                     # and data available in the file
                     buffer[0] = self.reader_file[self.reader_index]
                     self.reader_index += 1
+                    if buffer[0] > 127:
+                        sys.stderr.write('\n--- Non-ASCII character ignored\n')
+                        sys.stderr.flush()
+                        buffer[0] = 255 # replace by DEL
                     if buffer[0] == 255: # DEL is sent as 255, 255
                         self.serial.write(buffer)
                         self.serial.write(buffer)
@@ -550,7 +375,9 @@ class Miniterm(object):
                 warned = True
                 
             # wait until file becomes available        
-            if self.power_cycle_needed: # cancel wait on power cycle
+            if not self.alive:
+                return
+            elif self.power_cycle_needed: # cancel wait on power cycle
                 buffer[0] = 255 # reply of 255, 0 cancels the read
                 self.serial.write(buffer)
                 buffer[0] = 0
@@ -565,10 +392,15 @@ class Miniterm(object):
     def read_from_tty(self):
         """read next character from console"""
         buffer = bytearray(b'0')
-        while True:
+        while self.alive:
             if self.tty_buffer:
                 # character available
-                buffer[0] = self.add_parity(self.tty_buffer)
+                if self.tty_buffer > 127:
+                    sys.stderr.write('\n--- Non-ASCII character ignored\n')
+                    sys.stderr.flush()
+                    buffer[0] = 255 # replace by DEL
+                else:
+                    buffer[0] = self.add_parity(self.tty_buffer)
                 self.tty_buffer = None
                 if buffer[0] == 255: # DEL is sent as 255, 255
                     self.serial.write(buffer)
@@ -696,14 +528,8 @@ class Miniterm(object):
                     self.stop()             # exit app
                     break
                 elif self.tty_buffer is None:
-                    self.tty_buffer=ord(c[0])
-                    if self.echo:
-                        echo_text = c
-                        for transformation in self.tx_transformations:
-                            echo_text = transformation.echo(echo_text)
-                        self.console.write(c[0])
-                else:
-                    self.console.write('!')
+                    self.tty_buffer=ord(c)
+                    self.console.write(c)
         except:
             self.alive = False
             raise
@@ -712,9 +538,7 @@ class Miniterm(object):
         """Implement a simple menu / settings"""
         if c == self.menu_character or c == self.exit_character:
             # Menu/exit character again -> send itself
-            self.serial.write(self.tx_encoder.encode(c))
-            if self.echo:
-                self.console.write(c)
+            self.serial.write(ord(c[0]))          
         elif c in '\x08hH?':                   # CTRL+H, h, H, ? -> Show help
             sys.stderr.write(self.get_help_text())
         elif c in 'rR':                        # R -> upload paper tape reader file
@@ -726,6 +550,7 @@ class Miniterm(object):
             self.power_cycle_needed = True
         elif c in 'dD':                        # D -> change device speeds
             self.change_speed = True
+            sys.stderr.write("--- Change speed\n")
         elif c in 'fF':                        # F -> flags and variables
             self.status()
         elif c in 'iI':                        # I -> info
@@ -792,41 +617,6 @@ class Miniterm(object):
             else:
                 self.reader_file = None
                 sys.stderr.write('--- Paper tape reader unloaded\n')
-
-    def change_filter(self):
-        """change the i/o transformations"""
-        sys.stderr.write('\n--- Available Filters:\n')
-        sys.stderr.write('\n'.join(
-            '---   {:<10} = {.__doc__}'.format(k, v)
-            for k, v in sorted(TRANSFORMATIONS.items())))
-        sys.stderr.write('\n--- Enter new filter name(s) [{}]: '.format(' '.join(self.filters)))
-        with self.console:
-            new_filters = sys.stdin.readline().lower().split()
-        if new_filters:
-            for f in new_filters:
-                if f not in TRANSFORMATIONS:
-                    sys.stderr.write('--- unknown filter: {!r}\n'.format(f))
-                    break
-            else:
-                self.filters = new_filters
-                self.update_transformations()
-        sys.stderr.write('--- filters: {}\n'.format(' '.join(self.filters)))
-
-    def change_encoding(self):
-        """change encoding on the serial port"""
-        sys.stderr.write('\n--- Enter new encoding name [{}]: '.format(self.input_encoding))
-        with self.console:
-            new_encoding = sys.stdin.readline().strip()
-        if new_encoding:
-            try:
-                codecs.lookup(new_encoding)
-            except LookupError:
-                sys.stderr.write('--- invalid encoding name: {}\n'.format(new_encoding))
-            else:
-                self.set_rx_encoding(new_encoding)
-                self.set_tx_encoding(new_encoding)
-        sys.stderr.write('--- serial input encoding: {}\n'.format(self.input_encoding))
-        sys.stderr.write('--- serial output encoding: {}\n'.format(self.output_encoding))
 
     def change_baudrate(self):
         """change the baudrate"""
@@ -934,7 +724,7 @@ class Miniterm(object):
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # default args can be used to override when calling main() from an other script
 # e.g to create a miniterm-my-device.py
-def main(default_port=None, default_baudrate=9600, default_rts=None, default_dtr=None, serial_instance=None):
+def main(default_port=None, default_baudrate=115250,  serial_instance=None):
     """Command line tool, entry point"""
 
     import argparse
@@ -1020,9 +810,9 @@ def main(default_port=None, default_baudrate=9600, default_rts=None, default_dtr
             serial_instance = serial.serial_for_url(
                 args.port,
                 args.baudrate,
-                parity='N', #- args.parity,
-                rtscts=0,   #- args.rtscts,
-                xonxoff=0,  #- args.xonxoff,
+                parity='N', 
+                rtscts=0,   
+                xonxoff=0,  
                 do_not_open=True)
 
             if not hasattr(serial_instance, 'cancel_read'):
@@ -1044,17 +834,10 @@ def main(default_port=None, default_baudrate=9600, default_rts=None, default_dtr
         else:
             break
 
-    miniterm = Miniterm(
-        serial_instance,
-        echo=False,  #- args.echo,
-        eol='crlf',  #- args.eol.lower(),
-        filters=['default']) #- filters)
+    miniterm = Miniterm(serial_instance)
     miniterm.exit_character = unichr(args.exit_char)
     miniterm.menu_character = unichr(args.menu_char)
-    miniterm.raw = True #- args.raw
-    miniterm.set_rx_encoding('UTF-8')
-    miniterm.set_tx_encoding('UTF-8')
-
+    
     if not args.quiet:
         sys.stderr.write('--- 920M Operator on {p.name}  {p.baudrate},{p.bytesize},{p.parity},{p.stopbits}\n'.format(
             p=miniterm.serial))
