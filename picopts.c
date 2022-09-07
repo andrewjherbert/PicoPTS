@@ -1,6 +1,6 @@
 // Elliott 900 Paper Tape Station  emulator for Raspberry Pi Pico
 
-// Copyright (c) Andrew Herbert - 06/09/2022
+// Copyright (c) Andrew Herbert - 07/09/2022
 
 // MIT Licence.
 
@@ -440,7 +440,7 @@ static inline void stop_computer() {
 static inline void restart_computer()
 {
   if ( logging() ) printf("LPicoPTS - Restarting computer\n");
-  stop_computer();
+  gpio_put(NOPOWER_PIN, 1);
   sleep_ms(1000);
   gpio_put(NOPOWER_PIN, 0);
 }

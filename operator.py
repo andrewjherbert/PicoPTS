@@ -2,7 +2,7 @@
 #
 # 900 Computer Operator
 #
-# Derived from pyserial miniterm by Andrew Herbert 08/09/2022
+# Derived from pyserial miniterm by Andrew Herbert 07/09/2022
 #
 # Very simple serial terminal
 #
@@ -454,6 +454,7 @@ class Miniterm(object):
             buffer[0] = 1
         else:
             buffer[0] = 0
+        serial.write(buffer)
 
     def power_cycle(self):
         self.power_cycle_needed = False
