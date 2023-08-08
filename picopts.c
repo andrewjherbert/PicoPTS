@@ -50,8 +50,9 @@
 // An additional GPIO pin LOG_PIN, high signals that diagnostic
 // logging messages should be sent to the serial port.
 //
-// When an emulation is running the onbaord LED is illumintaed,
-// otherwise the LED is extinguished.
+// When an emulation is running the onboard LED blinks, at a
+// slow rate when idle, at a fast rate when waiting for data
+// from operator or 920M. Otherwise the LED is extinguished.
 
 // The Pico is equipped with a push button which can used used
 // to force a restart of the Pico system.  This completely
@@ -65,6 +66,7 @@
 // Operator        PicoPTS         Effect
 // -------         -------         ------
 //
+// send D                          Toggle data rate between fast and slow
 // send N                          Set NOPOWER HIGH for 1 sec
 //                                 (to reset 920M and clear any
 //                                  pending R or S command))
@@ -181,6 +183,10 @@ const char* error_messages[] =
                           { "1 - Unknown operator command",
 			    "2 - program exited" };
 
+// Blink rates
+#define FAST_BLINK  250 // ms
+#define SLOW_BLINK 1000 // ms
+#define NO_BLINK      0
 
 /**********************************************************/
 /*                         GLOBALS                        */
@@ -212,14 +218,15 @@ uint32_t reader_time = SLOW_READER,
          punch_time  = SLOW_PUNCH,
          tty_time    = SLOW_TTY;
 
+uint32_t blink = NO_BLINK;
+
 
 /**********************************************************/
 /*                         FUNCTIONS                      */
 /**********************************************************/
 
 static  void     setup_gpios();                // initialize GPIO interface 
-static  void     led_on();                     // turn onboard LED on
-static  void     led_off();                    // turn onboard LED off
+static  void     blinker();                    // blink onboard LED 
 static  uint32_t logging();                    // TRUE is logging enabled
 static  uint32_t ack();                        // signal an ACK
 static  void     stop_computer();              // assert NOPOWER
@@ -246,11 +253,10 @@ int main() {
   stdio_init_all(); // initialise stdio
   setup_gpios(); // configure interface to outside world
 
-  led_off();
-  
   reader_free = punch_free = tty_free = get_absolute_time(); // set device
                                                              // timer
-  pts_emulation();
+  multicore_launch_core1(blinker); // set LED blinker running
+  pts_emulation(); // set paper tape station running
   
   /* NOT REACHED */
   
@@ -267,7 +273,7 @@ static void pts_emulation()
 
   // long jump to here on error
   if ( fail_code = setjmp(jbuf) ) { // test if a longjmp occurred
-    led_off();
+    blink = NO_BLINK;
     stop_computer();      // stop 920M
     gpio_put(ACK_PIN, 0); //   and abort any transfer
 
@@ -280,7 +286,8 @@ static void pts_emulation()
   };
 
   if ( logging() ) printf("LPicoPTS - Starting\n");
-  led_on();
+
+  blink = SLOW_BLINK;
   
   // start polling
   while ( TRUE ) {
@@ -322,6 +329,7 @@ static void pts_emulation()
 
     // look for a request
     if ( (request = gpio_get_all()) & RDRREQ_BIT ) {
+      blink = FAST_BLINK;
       putchar_raw(( request & TTYSEL_BIT ) ? 'S' : 'R');
                                          // S for tty read, R for ptr read
       // wait for character response
@@ -332,18 +340,21 @@ static void pts_emulation()
 	if ( data == 255 )
 	  put_pts_ch(data, request); // 255, 255  = 255 (DEL)
 	else
-	  restart_computer(); // 255, 0 = restart	
+	  restart_computer(); // 255, 0 = restart
+	blink = SLOW_BLINK;
       }
       else {
 	put_pts_ch(data, request);
       }
     }
     else if ( request & PUNREQ_BIT ) {
+      blink = FAST_BLINK;
       putchar_raw((request & TTYSEL_BIT) ? 'Q' : 'P');
                                         // Q for tty write, P for punch write
       putchar_raw(get_pts_ch(request)); // wait for handshake
       while ( (data = getchar_timeout_us(1000000000)) == PICO_ERROR_TIMEOUT );
       if ( data ) restart_computer();  // operator wants to restart
+      blink = SLOW_BLINK;
     };
   };
 }
@@ -412,18 +423,6 @@ static void setup_gpios()
   gpio_pull_down(TTYSEL_PIN);
 }
 
-/* LED blinking */
-
-static inline void led_on()
-{
-  gpio_put(LED_PIN, 1);
-}
-
-static inline void led_off()
-{
-  gpio_put(LED_PIN, 0);
-}
-
 /* Read logging status */
 
 static inline uint32_t logging() {
@@ -467,3 +466,24 @@ static inline uint32_t wait_for_request()
     return PUNCH;
 }
 
+/**********************************************************/
+/*                          BLINKER                       */
+/**********************************************************/
+
+static inline void blinker()
+{
+  static uint32_t led_state = 0;
+  while (TRUE)
+    if ( blink == NO_BLINK) {
+      if ( led_state ) {
+	led_state = 0;
+	gpio_put(LED_PIN, 0);
+      sleep_ms(100);
+      }
+    }
+    else {
+      led_state = (led_state+1)&1;
+      gpio_put(LED_PIN, led_state);
+      sleep_ms(blink);
+    }
+}

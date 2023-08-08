@@ -2,11 +2,12 @@
 #
 # 900 Computer Operator
 #
-# Derived from pyserial miniterm by Andrew Herbert 07/09/2022
+# Derived from pyserial miniterm by Andrew Herbert 08/08/2023
 #
 # Very simple serial terminal
 #
-# This file is part of pySerial. https://github.com/pyserial/pyserial
+# This file is copied from part of pySerial.
+# https://github.com/pyserial/pyserial
 # (C)2002-2020 Chris Liechti <cliechti@gmx.net>
 #
 # SPDX-License-Identifier:    BSD-3-Clause
@@ -862,4 +863,3 @@ def main(default_port=None, default_baudrate=115250,  serial_instance=None):
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if __name__ == '__main__':
     main()
-    
