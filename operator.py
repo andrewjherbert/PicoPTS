@@ -2,7 +2,7 @@
 #
 # 900 Computer Operator
 #
-# Derived from pyserial miniterm by Andrew Herbert 08/08/2023
+# Derived from pyserial miniterm by Andrew Herbert 07/10/2023
 #
 # Very simple serial terminal
 #
@@ -286,9 +286,9 @@ class Miniterm(object):
         self.reader_index = 0 # position of next character in reader_file if open
         self.punch_file = None # file to receive paper tape punch output
         self.tty_buffer = None # holds buffered character from console
-        self.power_cycle_needed = False
         self.punch_buffer = None
         self.change_speed = False
+        self.char_time = 5 / serial_instance.baudrate
 
     def _start_reader(self):
         """Start reader thread"""
@@ -315,6 +315,12 @@ class Miniterm(object):
         self.transmitter_thread.start()
         self.console.setup()
 
+    def restart_reader(self):
+        """restart reader thread"""
+        self._stop_reader()
+        self._start_reader()
+        sys.stderr.write('\n--- Restarted\n')
+        
     def stop(self):
         """set flag to stop worker threads"""
         self.alive = False
@@ -355,40 +361,25 @@ class Miniterm(object):
                     # and data available in the file
                     buffer[0] = self.reader_file[self.reader_index]
                     self.reader_index += 1
-                    if buffer[0] > 127:
-                        sys.stderr.write('\n--- Non-ASCII character ignored\n')
+                    if self.serial.in_waiting:
+                        sys.stderr.write('\n--- RDR read protocol error\n')
                         sys.stderr.flush()
-                        buffer[0] = 255 # replace by DEL
-                    if buffer[0] == 255: # DEL is sent as 255, 255
-                        self.serial.write(buffer)
-                        self.serial.write(buffer)
+                        return # abandon transfer
                     else:
                         self.serial.write(buffer)
-                    return # transfer complete
+                        return # transfer complete
                 else:
                     # reached end of file
                     self.reader_file = None # run off end of file
                     
             # Here if either no file uploaded or run off end
             if not warned: # advise the operator
-                sys.stderr.write('--- Paper tape reader empty\n')
+                sys.stderr.write('\n--- Paper tape reader empty\n')
                 sys.stderr.flush()
                 warned = True
                 
-            # wait until file becomes available        
-            if not self.alive:
-                return
-            elif self.power_cycle_needed: # cancel wait on power cycle
-                buffer[0] = 255 # reply of 255, 0 cancels the read
-                self.serial.write(buffer)
-                buffer[0] = 0
-                self.serial.write(buffer)
-                self.tape_file = None
-                sys.stderr.write('--- Paper tape input cancelled\n')
-                sys.stderr.flush()
-                return # read transfer complete
-            else:
-                time.sleep(0.1) # continue to wait for file
+            # wait until file becomes available
+            time.sleep(0) # continue to wait for file
 
     def read_from_tty(self):
         """read next character from console"""
@@ -399,91 +390,70 @@ class Miniterm(object):
                 if self.tty_buffer > 127:
                     sys.stderr.write('\n--- Non-ASCII character ignored\n')
                     sys.stderr.flush()
-                    buffer[0] = 255 # replace by DEL
                 else:
                     buffer[0] = self.add_parity(self.tty_buffer)
                 self.tty_buffer = None
-                if buffer[0] == 255: # DEL is sent as 255, 255
-                    self.serial.write(buffer)
-                    self.serial.write(buffer)
-                    return # transfer complete
+                if self.serial.in_waiting > 0:
+                    sys.stderr.write('\n--- TTY read protocol error\n')
+                    sys.stderr.flush()
+                    return # transfer aborted
                 else:
                     self.serial.write(buffer)
-                    return # transfer complete
-                
-            elif self.power_cycle_needed: # cancel wait on power cycle
-                self.power_cycle_needed = False
-                buffer[0] = 255 # reply of 255, 0 cancels the read
-                self.serial.write(buffer)
-                buffer[0] = 0
-                self.serial.write(buffer)
-                sys.stderr.write('--- Teletype input cancelled\n')
-                sys.stderr.flush()
-                return # read transfer complete
+                return # transfer complete
             else:
-                time.sleep(0.1) # continue to wait for data
+                time.sleep(0) # continue to wait for data
 
     def punch_to_tty(self):
-        """take next character from teletype"""
+        """type character on teletype"""
         buffer = bytearray(b'0')
+        self.serial.timeout = 0.01
         data = self.serial.read()
+        self.serial.timeout = None
+        if data is None:
+            sys.stderr.write('\n--- TTY write protocol error\n')
+            sys.stderr.flush()
+            return # abandon transfer
         buffer[0] = data[0] & 127 # strip off parity bit
         self.console.write_bytes(buffer)
-        # send back ack or power_cycle_needed
-        if self.power_cycle_needed:
-            self.power_cycle_needed = False
-            sys.stderr.write('--- Teletype output cancelled\n')
-            sys.stderr.flush()
-            buffer[0] = 1
-        else:
-            buffer[0] = 0
-        self.serial.write(buffer)
 
     def punch_to_tape(self):
-        """take next character from paper tape punch"""
+        """punch character on  paper tape"""
         buffer = bytearray(b'0')
+        self.serial.timeout = 0.01
         ch = self.serial.read()
+        self.serial.timeout = None
+        if ch is None:
+            sys.stderr.write('\n--- PUN write protocol error\n')
+            sys.stderr.flush()
+            return # abandon transfer
+            
         if not self.punch_buffer:
             self.punch_buffer = bytes(ch)
         else:
             self.punch_buffer += ch
-        # send back ack or power_cycle_needed
-        if self.power_cycle_needed:
-            self.power_cycle_needed = False
-            sys.stderr.write('--- Teletype input cancelled\n')
-            sys.stderr.flush()
-            buffer[0] = 1
-        else:
-            buffer[0] = 0
-        serial.write(buffer)
-
-    def power_cycle(self):
-        self.power_cycle_needed = False
-        self.serial.write(b'N')
-        self.tty_buffer = None
 
     def reader(self):
         """loop and copy serial->console"""
         buffer = bytearray(b'0')
         try:
-            while self.alive:
+            while self._reader_alive & self.alive:
                 # read or wait for one byte
-                if self.power_cycle_needed:
-                    self.power_cycle()
-                elif self.change_speed:
+                if self.change_speed:
                     self.change_speed = False
                     self.serial.write(b'D')
                 else:
-                    self.serial.timeout = 0.1
+                    self.serial.timeout = 0
                     data = self.serial.read()
                     self.serial.timeout = None
-                    if data:
+                    if not data:
+                        time.sleep(0)
+                    else:
                         ch = chr(data[0])
-                        if   ch == '\x00':
-                            sys.stderr.write('--- NUL ignored\n')
-                            
-                        elif ch == 'L': # Logging message
-                            self.console.write_bytes(self.serial.read_until())
+                        if   ch == 'L': # Logging message
+                            self.serial.inter_byte_timeout = self.char_time
+                            msg = self.serial.read_until()
+                            self.serial.inter_byte_timeout = None
+                            self.console.write_bytes(msg)
                             
                         elif ch == 'R': # Read from paper tape
                             self.read_from_paper_tape()
@@ -494,13 +464,18 @@ class Miniterm(object):
                         elif ch == 'P': # punch to paper tape
                             self.punch_to_tape()
  
-                        elif ch == 'Q': # punch  teltoetype
+                        elif ch == 'Q': # punch to teletype
                             self.punch_to_tty()
-                            
-                        else:
-                            sys.stderr.write('--- Unexpected code ')
+                        elif ch \= '\x00' and ch = '\xff' and ch = '\n':
+                            sys.stderr.write('\n--- Unexpected code ')
                             sys.stderr.write(str(data[0]))
                             sys.stderr.write('\n')
+                            sys.stderr.flush()
+                        else:
+                            sys.stderr.write('\n--- ignored code ') # temporary for debugging
+                            sys.stderr.write(str(data[0]))
+                            sys.stderr.write('\n')
+                            sys.stderr.flush()
         except serial.SerialException:
             self.alive = False
             self.console.cancel()
@@ -547,12 +522,9 @@ class Miniterm(object):
             self.upload_file()
         elif c in 'pP':                        # P -> save punch output
             self.download_file()
-        elif c in 'nN':                        # N -> toggle 920M power
-            sys.stderr.write('--- Toggle 920M Power\n')
-            self.power_cycle_needed = True
         elif c in 'dD':                        # D -> change device speeds
             self.change_speed = True
-            sys.stderr.write("--- Change speed\n")
+            sys.stderr.write("--- Toggle device speeds\n")
         elif c in 'fF':                        # F -> flags and variables
             self.status()
         elif c in 'iI':                        # I -> info
@@ -560,9 +532,12 @@ class Miniterm(object):
         elif c in 'cC':                        # C -> change port
             self.change_port()
         elif c in 'zZ':                        # Z -> suspend / open port temporarily
+            sys.stderr.write('\n--- Suspending port\n')
             self.suspend_port()
         elif c in 'bB':                        # B -> change baudrate
             self.change_baudrate()
+        elif c in 'xX':                        # X -> restart terminal
+            self.restart_reader()
         elif c in 'qQ':                        # Q -> exit app
             self.stop()                        
         else:
@@ -570,16 +545,18 @@ class Miniterm(object):
 
     def status(self):
         if not self.reader_file:
-            sys.stderr.write('--- No paper tape file loaded\n')
+            sys.stderr.write('\n--- No paper tape file loaded\n')
         elif self.reader_index >= len(self.reader_file):
             sys.stderr.write('--- Run off end of paper tape\n')
         if self.punch_buffer:
             sys.stderr.write('--- ' + str(len(punch_buffer)) +
                              ' paper tape characters punched\n');
+        else:
+            sys.stderr.write('--- No buffered punch output\n')
         if self.tty_buffer:
             sys.stderr.write('--- Teleprinter character buffered\n')
-        if self.power_cycle_needed:
-            sys.stderr.write('--- Power cycle needed')
+        else:
+            sys.stderr.write('--- NO teleptype character buffered\n')
 
     def download_file(self):
         """Ask user for punch file"""
@@ -628,6 +605,7 @@ class Miniterm(object):
             backup = self.serial.baudrate
             try:
                 self.serial.baudrate = int(sys.stdin.readline().strip())
+                self.char_time = 5 / self.serial.baudrate
             except ValueError as e:
                 sys.stderr.write('--- ERROR setting baudrate: {}\n'.format(e))
                 self.serial.baudrate = backup
@@ -709,15 +687,15 @@ class Miniterm(object):
 ---    
 ---    H Help
 ---
-----   D Changed device speeds
----    F Flags and variables (debugging information)    
----    R Upload tape reader file (prompt will be shown)
----    P Save punch output to file (prompt will be shown
----    N Power cycle 920M (toggle NOPOWER)
----
----    I Show serial port info
----    S change serial port
 ---    B change baud rate
+----   D Toggle device speeds
+---    F Flags and variables (debugging information)
+---    I Show serial port info  
+---    P Save punch output to file (prompt will be shown)  
+---    R Upload tape reader file (prompt will be shown)
+---    S Change serial port
+---    X Reset terminal
+---    Z Suspend port
 """.format(version=getattr(serial, 'VERSION', 'unknown version'),
            exit=key_description(self.exit_character),
            menu=key_description(self.menu_character))

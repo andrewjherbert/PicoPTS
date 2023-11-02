@@ -1,6 +1,6 @@
 // Elliott 900 Paper Tape Station  emulator for Raspberry Pi Pico
 
-// Copyright (c) Andrew Herbert - 07/09/2022
+// Copyright (c) Andrew Herbert - 31/10/2023
 
 // MIT Licence.
 
@@ -39,20 +39,13 @@
 // 8177. If low the computer should obey the initial orders
 // to load in a program from paper tape.
 //
-// NOPOWER_PIN, high signals that the computer should stop
-// execution and enter a reset state.  Low signals that
-// the computecd r whould wake up if in the reset state and
-// execute an autostart or initial instructions as determined
-// by II_AUTO.  NOPOWER should remain low so that the computer
-// can continue to execute until next reset by raising NOPOWER
-// high again.
-//
 // An additional GPIO pin LOG_PIN, high signals that diagnostic
 // logging messages should be sent to the serial port.
 //
-// When an emulation is running the onboard LED blinks, at a
-// slow rate when idle, at a fast rate when waiting for data
-// from operator or 920M. Otherwise the LED is extinguished.
+// The STATUS LED (STATUS_LED_PIN) is used to signal emulation status.
+// A regular one second flash indicates emulation is running.
+// A fast 0.25 second flash indicates halted after an internal
+// error.
 
 // The Pico is equipped with a push button which can used used
 // to force a restart of the Pico system.  This completely
@@ -67,9 +60,6 @@
 // -------         -------         ------
 //
 // send D                          Toggle data rate between fast and slow
-// send N                          Set NOPOWER HIGH for 1 sec
-//                                 (to reset 920M and clear any
-//                                  pending R or S command))
 //
 //                 send L text\n   treat text as 7 bit ASCII
 //                                 logging message
@@ -77,16 +67,13 @@
 //                 send R          request tape reader input
 // data                            next 8 bit reader character
 //
-//                 send Sx         request teletype input
+//                 send S          request teletype input
 // data                            next 8 bit reader character
 //
-// 255, N    = NOPOWER break
-// 255, 255  = data  255
-//
-//                 send Pdata      request punch output of
+//                 send P data     request punch output of
 //                                 8 bit punch character
 //
-//                 send Qdata      request teletype output of
+//                 send Q data     request teletype output of
 //                                 8 bit reader character
 
 
@@ -120,7 +107,7 @@
 // Duration of i/o operations in microseconds
 // These can be modified but need to be long
 // enough so that PTS doesn't overrun the 920M.
-// Empiracally the minimum time is 2uS.
+// Empirically the minimum time is 2uS.
 #define FAST_TTY          5
 #define SLOW_READER    4000  //  250 ch/s
 #define FAST_READER       5
@@ -153,35 +140,38 @@
 
 #define PUN_PINS_MASK (255 << PUN_1_PIN) // PINs to bit mask
 
-#define NOPOWER_PIN 18 // set HIGH to stop and reset, set LOW to run
+#define IO_PIN      18 // set HIGH during data transfersdata transfer LED
 #define ACK_PIN     19 // pulse HIGH to acknowledge RDR or PUN request
 #define II_AUTO_PIN 20 // set HIGH to autostart on reset, or LOW to execute
                        // initial instructions
 #define TTYSEL_PIN  21 // Pico sets HIGH to request reader input and awaits ACK
-#define PUNREQ_PIN  22 // Pico sets HIGH to request punch output and awiats ACK
+#define RDRREQ_PIN  22 // Pico sets HIGH to request punch output and awaits ACK
 // There is no GPIO23, GPIO24
-#define LED_PIN     25 // onboard LED    
-#define RDRREQ_PIN  26 // Pico sets HIGH to select teleprinter,
+#define LED_PIN     25 // onboard LED  
+#define PUNREQ_PIN  26 // Pico sets HIGH to select teleprinter,
                        // LOW for paper tape
 #define LOG_PIN     27 // set HIGH to enable logging
+#define STATUS_PIN  28 // emulation status LED
 // GPIO28 spare
 
+#define RDR_1_BIT    (1 << RDR_1_PIN)
+#define PUN_1_BIT    (1 << PUN_1_PIN)
 #define RDRREQ_BIT   (1 << RDRREQ_PIN)
 #define PUNREQ_BIT   (1 << PUNREQ_PIN)
 #define TTYSEL_BIT   (1 << TTYSEL_PIN)
 #define REQ_BITS     (RDRREQ_BIT | PUNREQ_BIT)
-#define ACK_BIT      (1 << ACK_PIN)
-#define NOPOWER_BIT  (1 << NOPOWER_PIN)
 
 #define READ  1 // return values from wait_for_request
 #define PUNCH 2
 
-#define COMMAND_FAIL      1
-#define PROTOCOL_FAIL     2
+#define COMMAND_FAIL        1
+#define READ_PROTOCOL_FAIL  2
+#define PUNCH_PROTOCOL_FAIL 3
 
 const char* error_messages[] =
                           { "1 - Unknown operator command",
-			    "2 - program exited" };
+			    "2 - Read protocol error",
+			    "3 - Punch protocol error"};
 
 // Blink rates
 #define FAST_BLINK  250 // ms
@@ -193,7 +183,7 @@ const char* error_messages[] =
 /**********************************************************/
 
 #define IN_PINS  12 // count of input pins
-#define OUT_PINS 12 // count of output pins
+#define OUT_PINS 13 // count of output pins
 
 
 const uint32_t in_pins[IN_PINS] =
@@ -202,7 +192,7 @@ const uint32_t in_pins[IN_PINS] =
     PUN_32_PIN, PUN_64_PIN, PUN_128_PIN, LOG_PIN };
 
 const uint32_t out_pins[OUT_PINS] =
-  { NOPOWER_PIN, ACK_PIN,   II_AUTO_PIN, LED_PIN, 
+  { ACK_PIN,   II_AUTO_PIN, IO_PIN,      STATUS_PIN, LED_PIN,
     RDR_1_PIN,  RDR_2_PIN,  RDR_4_PIN,   RDR_8_PIN,
     RDR_16_PIN, RDR_32_PIN, RDR_64_PIN,  RDR_128_PIN };
 
@@ -220,23 +210,40 @@ uint32_t reader_time = SLOW_READER,
 
 uint32_t blink = NO_BLINK;
 
-
 /**********************************************************/
 /*                         FUNCTIONS                      */
 /**********************************************************/
 
-static  void     setup_gpios();                // initialize GPIO interface 
-static  void     blinker();                    // blink onboard LED 
-static  uint32_t logging();                    // TRUE is logging enabled
-static  uint32_t ack();                        // signal an ACK
-static  void     stop_computer();              // assert NOPOWER
-static  void     restart_computer();           // stop, then assert -NOPOWER
-static  void     put_pts_ch(const uint32_t ch, const uint32_t request);
-                                               // send character 
-static  uint32_t get_pts_ch(const uint32_t request);
-                                               // receive character
-static  uint32_t wait_for_request();           // wait for RDR or PUN request
-static  void     pts_emulation();              // paper tape station emulation
+static void     setup_gpios();                  // initialize GPIO interface
+static uint32_t poll_for_request();             // poll for request from 920M
+static uint32_t read_request(const uint32_t request); // test if reader request
+static uint32_t punch_request(const uint32_t request);// test if punch request
+static uint32_t tty_request(const uint32_t request); // test if teletype request
+static void     led_on();                       // turn on onboard LED
+static void     status_on();                    // turn on STATUS LED
+static void     status_off();                   // turn off STATUS LED
+static void     io_on();                        // turn on IO LED
+static void     io_off();                       // turn off IO LED
+static void     status(const uint32_t onoff);   // set STATUS_LED
+static void     pack_reader_data(const uint32_t ch);
+static uint32_t unpack_punch_data(const uint32_t request);
+static void     blinker();                      // blink status LED 
+static uint32_t logging();                      // TRUE is logging enabled
+static uint32_t ack();                          // signal an ACK
+static void     cancel_ack();                   // remove ACK if present
+static void     put_pts_ch(const uint32_t tty);
+                                                // send reader character 
+static uint32_t get_pts_ch(const uint32_t ch, const uint32_t tty);
+                                                // receive punch character
+static void     pts_emulation();                // paper tape station emulatio
+
+// Testing routines
+static void     loopback_test();                
+static void     on(const char* name, const uint32_t pin);
+static void     off(const uint32_t pin);
+static void     pause();
+static void     check(const char* pin, const uint32_t bit);
+static void     signals(const uint32_t pins);   
 
 
 /**********************************************************/
@@ -252,14 +259,84 @@ int main() {
 
   stdio_init_all(); // initialise stdio
   setup_gpios(); // configure interface to outside world
+  led_on(); // show Pico is alive
+  sleep_ms(250); // allow serial link to stabilise
+  
+  loopback_test();
 
-  reader_free = punch_free = tty_free = get_absolute_time(); // set device
-                                                             // timer
   multicore_launch_core1(blinker); // set LED blinker running
   pts_emulation(); // set paper tape station running
-  
   /* NOT REACHED */
+}
+
+
+/**********************************************************/
+/*                         TESTING                        */
+/**********************************************************/
+
+static void loopback_test()
+{
+  printf("PicoPTS Loopback Test\n");
+  while ( TRUE )
+    {
+      printf((logging() ? "Logging\n" : "Not logging\n"));
+      on("STATUS", STATUS_PIN); pause(); off(STATUS_PIN);printf("\n");
+      on("IO", IO_PIN); pause(); off(IO_PIN);printf("\n");
+      on("II_AUTO", II_AUTO_PIN); check("TTYSEL", TTYSEL_BIT); off(II_AUTO_PIN);
+      on("ACK", ACK_PIN); check("RDRREQ", RDRREQ_BIT); off(ACK_PIN);
+      on("RDR_1",RDR_1_PIN); check("PUN_1", PUN_1_BIT);off(RDR_1_PIN);
+      on("RDR_2",RDR_2_PIN); check("PUN_2", PUN_1_BIT<<1);off(RDR_2_PIN);
+      on("RDR_4",RDR_4_PIN); check("PUN_4", PUN_1_BIT<<2);off(RDR_4_PIN);
+      on("RDR_8",RDR_8_PIN); check("PUN_8", PUN_1_BIT<<3);off(RDR_8_PIN);
+      on("RDR_16",RDR_16_PIN); check("PUN_16", PUN_1_BIT<<4);off(RDR_16_PIN);
+      on("RDR_32",RDR_32_PIN); check("PUN_32", PUN_1_BIT<<5);off(RDR_32_PIN);
+      on("RDR_64",RDR_64_PIN); check("PUN_64", PUN_1_BIT<<6);off(RDR_64_PIN);
+      on("RDR_128",RDR_128_PIN); check("PUN_128", PUN_1_BIT<<7);off(RDR_128_PIN);
+      printf("\n\n");
+    }
+}
+
+inline static void on(const char* name, const uint32_t pin)
+{
+  printf("%s", name);
+  gpio_put(pin, 1);
+  sleep_ms(0); // give time for level shifter to change
+}
+
+inline static void off(const uint32_t pin)
+{
+  gpio_put(pin, 0);
+  sleep_ms(0); // give time for level shifter to change
+}
   
+inline static void pause()
+{
+  sleep_ms(500);
+}
+
+inline static void check(const char* pin, const uint32_t bit)
+{
+  int32_t inputs = (gpio_get_all() & in_pins_mask);
+  if ( ((inputs & (RDRREQ_BIT | TTYSEL_BIT | (255 << PUN_1_PIN))) == bit) ) {
+    printf("\n", pin);
+    }
+  else {
+    printf(" Not matched by %s\n", pin);
+    signals(inputs);
+    while ( TRUE ) sleep_ms(100000);
+  }
+}
+
+static void signals(const uint32_t pins)
+{
+  printf("TTYSEL %1u RDRREQ %1u PUNREQ %1u PUN DATA %3d ",
+	 (pins >> TTYSEL_PIN) & 1,
+	 (pins >> RDRREQ_PIN) & 1,
+	 (pins >> PUNREQ_PIN) & 1,
+	 (pins >> PUN_1_PIN) & 255);
+  for ( uint32_t bit = 0 ; bit < 8 ; bit++ )
+    printf("%1u",(pins >> (PUN_128_PIN-bit)) & 1);
+  printf("\n");
 }
 
 
@@ -273,22 +350,24 @@ static void pts_emulation()
 
   // long jump to here on error
   if ( fail_code = setjmp(jbuf) ) { // test if a longjmp occurred
-    blink = NO_BLINK;
-    stop_computer();      // stop 920M
-    gpio_put(ACK_PIN, 0); //   and abort any transfer
-
+    blink = FAST_BLINK;
+    cancel_ack(); //   and abort any transfer
+    io_off();
     if ( logging() ) {
       printf("LPicoPTS - Halted after error - %s\n",
 	     error_messages[fail_code-1]);
-      while ( TRUE ) sleep_ms(1000);
-    };    
-    
-  };
+      while ( TRUE ) sleep_ms(INT32_MAX);
+    }     
+  }
 
-  if ( logging() ) printf("LPicoPTS - Starting\n");
+  blink = SLOW_BLINK; // indicate emulation running
+  reader_free = punch_free = tty_free
+                    = get_absolute_time(); // set device timer
+  // reset operator terminal
+  printf("\x00\n"); // 0 to complete a read, \n to complete a log
 
-  blink = SLOW_BLINK;
-  
+  if ( logging() ) printf("\n\n\nLPicoPTS - Starting emulator\n");
+
   // start polling
   while ( TRUE ) {
     int32_t data, request;
@@ -296,11 +375,11 @@ static void pts_emulation()
       {
       case PICO_ERROR_TIMEOUT:
 	break;
+      case 0:
+	if  ( logging() ) printf("LPicoPTS - NUL ignored\n");
+	break;
       case 255:
 	if  ( logging() ) printf("LPicoPTS - DEL ignored\n");
-	break;
-      case 'N':
-	restart_computer();
 	break;
       case 'D':
 	if ( reader_time == FAST_READER) {
@@ -325,46 +404,27 @@ static void pts_emulation()
 	  longjmp(jbuf, COMMAND_FAIL);
 	
 	/* NOT REACHED */
-      };
+      }
 
     // look for a request
-    if ( (request = gpio_get_all()) & RDRREQ_BIT ) {
-      blink = FAST_BLINK;
-      putchar_raw(( request & TTYSEL_BIT ) ? 'S' : 'R');
-                                         // S for tty read, R for ptr read
-      // wait for character response
-      while ( (data = getchar_timeout_us(1000000)) == PICO_ERROR_TIMEOUT );
-      // reads can be interrupted by a computer restart
-      if (  data == 255  ) {
-	while ( (data = getchar_timeout_us(1000000)) == PICO_ERROR_TIMEOUT );
-	if ( data == 255 )
-	  put_pts_ch(data, request); // 255, 255  = 255 (DEL)
-	else
-	  restart_computer(); // 255, 0 = restart
-	blink = SLOW_BLINK;
-      }
-      else {
-	put_pts_ch(data, request);
-      }
-    }
-    else if ( request & PUNREQ_BIT ) {
-      blink = FAST_BLINK;
-      putchar_raw((request & TTYSEL_BIT) ? 'Q' : 'P');
-                                        // Q for tty write, P for punch write
-      putchar_raw(get_pts_ch(request)); // wait for handshake
-      while ( (data = getchar_timeout_us(1000000000)) == PICO_ERROR_TIMEOUT );
-      if ( data ) restart_computer();  // operator wants to restart
-      blink = SLOW_BLINK;
-    };
-  };
+    request = poll_for_request();
+    if ( read_request(request) ) 
+      put_pts_ch(tty_request(request)); // read input	
+    else 
+      get_pts_ch(unpack_punch_data(request),
+		 tty_request(request)); // punch output
+  }
 }
 
 /*  Send a character to 920M                 */ 
-/*  i.e.,reader or tty input                 */
+/*  i.e., reader or tty input                */
 
-static inline void put_pts_ch(const uint32_t ch, const uint32_t request)
+static inline void put_pts_ch (const uint32_t tty)
 {
-  if ( request & TTYSEL_BIT) {
+  uint32_t ch;
+  io_on();
+  // wait until device ready
+  if ( tty ) {
     sleep_until(tty_free); // wait until tty idle
     tty_free = make_timeout_time_us(tty_time); // set tty busy
   }
@@ -372,26 +432,57 @@ static inline void put_pts_ch(const uint32_t ch, const uint32_t request)
     sleep_until(reader_free); // wait until reader idle
     reader_free = make_timeout_time_us(reader_time); // set reader busy
   }
-  gpio_put_masked(RDR_PINS_MASK, ch << RDR_1_PIN); // write 8 bits
+  // request data from device
+  if ( read_request(poll_for_request()) ) // check request is still present
+       putchar_raw(tty ? 'S' : 'R');      // S for tty read, R for ptr read
+  else {
+    longjmp(jbuf, READ_PROTOCOL_FAIL);
+    /* NOT REACHED */
+  }
+  // wait for character response from device
+  while ( (ch = getchar_timeout_us(1000)) == PICO_ERROR_TIMEOUT ) {
+    if ( read_request(poll_for_request()) )
+      continue;
+    else {
+      longjmp(jbuf, READ_PROTOCOL_FAIL);
+      /* NOT REACHED */
+    }
+    io_off();
+  }
+  // send data to 920M
+  pack_reader_data(ch); // send 8 bits to 920M
   ack();
+  io_off();
 }
 
 /* Receive a character from the 920M             */
 /* i.e., punch or tty output                     */
 
-static inline uint32_t get_pts_ch(const uint32_t request)
+static inline uint32_t get_pts_ch (const uint32_t ch, const uint32_t tty)
 {
-  if ( request & TTYSEL_BIT) {
+  io_on();
+  // wait for device to be ready  
+  if ( tty ) {
     sleep_until(tty_free); // wait until tty idle
     tty_free = make_timeout_time_us(tty_time); // set tty busy
-  } 
+  }
   else {
     sleep_until(punch_free); // wait until punch idle
     punch_free = make_timeout_time_us(punch_time); // set punch busy
   }
-  const uint32_t ch = (request & PUN_PINS_MASK) >> PUN_1_PIN; // read 8 bits
-  ack();
-  return ch;
+  putchar_raw(tty ? 'Q' : 'P');
+                     // Q for tty write, P for punch write
+  putchar_raw(ch);  // data to punch
+  // only ACK if request still present
+  if ( punch_request(poll_for_request()) ) {
+    ack();
+    io_off();
+    return ch;
+  }
+  else {
+    longjmp(jbuf, PUNCH_PROTOCOL_FAIL);
+    /* NOT REACHED */
+  }
 }
 
 
@@ -413,8 +504,6 @@ static void setup_gpios()
   gpio_set_dir_masked(in_pins_mask | out_pins_mask, out_pins_mask);
   // initialize all output GPIOs to LOW
   gpio_put_masked(out_pins_mask, 0); 
-  // set NOPOWER high
-  gpio_put(NOPOWER_PIN, 1);
   // set pull up on LOG_PIN so defaults to logging enabled
   gpio_pull_up(LOG_PIN);
   // set pull downs on request lines to avoid spurious signals
@@ -429,21 +518,6 @@ static inline uint32_t logging() {
   return gpio_get(LOG_PIN);
 }
 
-/* Power control */
-
-static inline void stop_computer() {
-  if ( logging() ) printf("LPicoPTS - Stopping computer\n");
-  gpio_put(NOPOWER_PIN, 1);
-}
-
-static inline void restart_computer()
-{
-  if ( logging() ) printf("LPicoPTS - Restarting computer\n");
-  gpio_put(NOPOWER_PIN, 1);
-  sleep_ms(1000);
-  gpio_put(NOPOWER_PIN, 0);
-}
-
 /* Acknowledge a transfer */
 
 static inline uint32_t ack()
@@ -453,18 +527,60 @@ static inline uint32_t ack()
   gpio_put(ACK_PIN, 0);
 }
 
-/* Wait for transfer request for up to timeout_ms milliseconds,
-   0 => indefinite timeout */
-
-static inline uint32_t wait_for_request()
-{
-  uint32_t request;
-  while ( (request = (gpio_get_all() & REQ_BITS)) == 0 ); // wait for request  
-  if ( request & RDRREQ_BIT )
-    return READ;
-  if ( request & PUNREQ_BIT ) 
-    return PUNCH;
+static inline void cancel_ack() {
+  gpio_put(ACK_PIN, 0);
 }
+
+/* Request decoding */
+
+static inline uint32_t poll_for_request() {
+  return gpio_get_all();
+}
+
+static inline uint32_t read_request(const uint32_t request) {
+  return request & RDRREQ_BIT;
+}
+
+static inline uint32_t punch_request(const uint32_t request) {
+  return request & PUNREQ_BIT;
+}
+
+static inline uint32_t tty_request(const uint32_t request) {
+  return request & TTYSEL_BIT;
+}
+
+static inline void led_on() {
+  gpio_put(LED_PIN, 1);
+}
+
+static inline void status_on() {
+  gpio_put(STATUS_PIN, 1);
+}
+
+static inline void status_off() {
+  gpio_put(STATUS_PIN, 0);
+}
+
+static inline void io_on() {
+  gpio_put(IO_PIN, 1);
+}
+
+static inline void io_off() {
+  gpio_put(IO_PIN, 0);
+}
+
+static inline void status_led(const uint32_t onoff) {
+  gpio_put(STATUS_PIN, onoff);
+}
+
+static inline void pack_reader_data (const uint32_t ch) {
+  gpio_put_masked(RDR_PINS_MASK, ch << RDR_1_PIN);
+}
+
+static inline uint32_t unpack_punch_data (const uint32_t request) {
+  (request & PUN_PINS_MASK) >> PUN_1_PIN;
+}
+
 
 /**********************************************************/
 /*                          BLINKER                       */
@@ -475,15 +591,13 @@ static inline void blinker()
   static uint32_t led_state = 0;
   while (TRUE)
     if ( blink == NO_BLINK) {
-      if ( led_state ) {
-	led_state = 0;
-	gpio_put(LED_PIN, 0);
-      sleep_ms(100);
-      }
+      led_state = 0;
+      status_led(0);
+      sleep_ms(SLOW_BLINK);
     }
     else {
       led_state = (led_state+1)&1;
-      gpio_put(LED_PIN, led_state);
+      status_led(led_state);
       sleep_ms(blink);
     }
 }
