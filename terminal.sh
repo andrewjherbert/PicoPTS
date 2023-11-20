@@ -1,5 +1,5 @@
 #!/bin/sh
-lxterminal -e "minicom -D /dev/ttyACM0 -b115200"
+lxterminal -e "minicom -D /dev/ttyACM1 -b115200"
 
 
 

@@ -2,7 +2,7 @@
 #
 # 900 Computer Operator
 #
-# Derived from pyserial miniterm by Andrew Herbert 07/10/2023
+# Derived from pyserial miniterm by Andrew Herbert 20/11/2023
 #
 # Very simple serial terminal
 #
@@ -19,6 +19,7 @@ import os
 import sys
 import threading
 import time
+import select
 
 import serial
 from serial.tools.list_ports import comports
@@ -240,7 +241,7 @@ else:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 def ask_for_port():
     """\
-    Show a list of ports and ask the user for a choice. To make selection
+1 2 3    Show a list of ports and ask the user for a choice. To make selection
     easier on systems with long device names, also allow the input of an
     index.
     """
@@ -286,9 +287,7 @@ class Miniterm(object):
         self.reader_index = 0 # position of next character in reader_file if open
         self.punch_file = None # file to receive paper tape punch output
         self.tty_buffer = None # holds buffered character from console
-        self.punch_buffer = None
-        self.change_speed = False
-        self.char_time = 5 / serial_instance.baudrate
+        self.punch_buffer = bytearray()
 
     def _start_reader(self):
         """Start reader thread"""
@@ -319,7 +318,8 @@ class Miniterm(object):
         """restart reader thread"""
         self._stop_reader()
         self._start_reader()
-        sys.stderr.write('\n--- Restarted\n')
+        sys.stderr.write('\n--- Reader restarted\n')
+        sys.stderr.flush()
         
     def stop(self):
         """set flag to stop worker threads"""
@@ -352,34 +352,35 @@ class Miniterm(object):
 
     def read_from_paper_tape(self):
         """read next character from paper tape, uploading a new file if necessary"""
-        buffer = bytearray(b'0')
+        buffer = bytearray(257) # count followed by up to 256 characters
         warned = False
         while self.alive:
             if self.reader_file:
                 # reader file available
                 if self.reader_index < len(self.reader_file):
                     # and data available in the file
-                    buffer[0] = self.reader_file[self.reader_index]
-                    self.reader_index += 1
-                    if self.serial.in_waiting:
-                        sys.stderr.write('\n--- RDR read protocol error\n')
-                        sys.stderr.flush()
-                        return # abandon transfer
-                    else:
-                        self.serial.write(buffer)
-                        return # transfer complete
+                    bytes_to_send = min(256, len(self.reader_file)- self.reader_index)
+                    buffer[0] = bytes_to_send - 1
+                    for i in range(1, bytes_to_send+1):
+                        buffer[i] = self.reader_file[self.reader_index]
+                        self.reader_index += 1
+                    self.serial.write(buffer[0:bytes_to_send+1])
+                    self.serial.flush()
+                    return # transfer complete
                 else:
                     # reached end of file
                     self.reader_file = None # run off end of file
                     
             # Here if either no file uploaded or run off end
             if not warned: # advise the operator
-                sys.stderr.write('\n--- Paper tape reader empty\n')
+                sys.stderr.write('\n--- Paper tape reader run out - type ^TR to load new tape\n')
                 sys.stderr.flush()
                 warned = True
-                
-            # wait until file becomes available
-            time.sleep(0) # continue to wait for file
+            elif self.serial.in_waiting > 0:
+                return # abandon request
+            else:
+                # wait until file becomes available
+                time.sleep(0) # continue to wait for file
 
     def read_from_tty(self):
         """read next character from console"""
@@ -392,90 +393,75 @@ class Miniterm(object):
                     sys.stderr.flush()
                 else:
                     buffer[0] = self.add_parity(self.tty_buffer)
-                self.tty_buffer = None
-                if self.serial.in_waiting > 0:
-                    sys.stderr.write('\n--- TTY read protocol error\n')
-                    sys.stderr.flush()
-                    return # transfer aborted
-                else:
                     self.serial.write(buffer)
+                    self.serial.flush()
+                self.tty_buffer = None
                 return # transfer complete
+            elif self.serial.in_waiting > 0:
+                return # abandon request
             else:
                 time.sleep(0) # continue to wait for data
 
     def punch_to_tty(self):
         """type character on teletype"""
         buffer = bytearray(b'0')
-        self.serial.timeout = 0.01
-        data = self.serial.read()
-        self.serial.timeout = None
-        if data is None:
-            sys.stderr.write('\n--- TTY write protocol error\n')
-            sys.stderr.flush()
-            return # abandon transfer
+        data = self.serial.read(size=1)
         buffer[0] = data[0] & 127 # strip off parity bit
-        self.console.write_bytes(buffer)
+        if buffer[0] == '!':
+            self.console.write.bytes(bytearray(b'*!*')) # temporary hack
+        else:
+            self.console.write_bytes(buffer)
 
     def punch_to_tape(self):
         """punch character on  paper tape"""
-        buffer = bytearray(b'0')
-        self.serial.timeout = 0.01
-        ch = self.serial.read()
-        self.serial.timeout = None
-        if ch is None:
-            sys.stderr.write('\n--- PUN write protocol error\n')
-            sys.stderr.flush()
-            return # abandon transfer
-            
-        if not self.punch_buffer:
-            self.punch_buffer = bytes(ch)
-        else:
-            self.punch_buffer += ch
+        data = self.serial.read(size=1)
+        self.punch_buffer.append(data[0])
 
     def reader(self):
-        """loop and copy serial->console"""
+        """loopreading command from serial"""
         buffer = bytearray(b'0')
         try:
             while self._reader_alive & self.alive:
                 # read or wait for one byte
-                if self.change_speed:
-                    self.change_speed = False
-                    self.serial.write(b'D')
+                self.serial.timeout = 0
+                data = self.serial.read(size=1)
+                self.serial.timeout = None
+                if len(data) < 1:
+                    time.sleep(0) # No data to read
                 else:
-                    self.serial.timeout = 0
-                    data = self.serial.read()
-                    self.serial.timeout = None
-                    if not data:
-                        time.sleep(0)
-                    else:
-                        ch = chr(data[0])
-                        if   ch == 'L': # Logging message
-                            self.serial.inter_byte_timeout = self.char_time
-                            msg = self.serial.read_until()
-                            self.serial.inter_byte_timeout = None
-                            self.console.write_bytes(msg)
-                            
-                        elif ch == 'R': # Read from paper tape
-                            self.read_from_paper_tape()
-                            
-                        elif ch == 'S': # read from teleprinter
-                            self.read_from_tty()
+                    ch = chr(data[0])
+                    if   ch == 'L': # Logging message
+                        msg = self.serial.read_until()
+                        self.console.write_bytes(msg)
 
-                        elif ch == 'P': # punch to paper tape
-                            self.punch_to_tape()
- 
-                        elif ch == 'Q': # punch to teletype
-                            self.punch_to_tty()
-                        elif ch \= '\x00' and ch = '\xff' and ch = '\n':
-                            sys.stderr.write('\n--- Unexpected code ')
-                            sys.stderr.write(str(data[0]))
-                            sys.stderr.write('\n')
-                            sys.stderr.flush()
-                        else:
-                            sys.stderr.write('\n--- ignored code ') # temporary for debugging
-                            sys.stderr.write(str(data[0]))
-                            sys.stderr.write('\n')
-                            sys.stderr.flush()
+                    elif ch == 'R': # Read from paper tape
+                        self.read_from_paper_tape()
+
+                    elif ch == 'S': # read from teleprinter
+                        self.read_from_tty()
+
+                    elif ch == 'P': # punch to paper tape
+                        self.punch_to_tape()
+
+                    elif ch == 'Q': # punch to teletype
+                        self.punch_to_tty()
+
+                    elif ch == 'Z': # restarting
+                        sys.stderr.write('\n--- Restarting\n')
+                        sys.stderr.flush();
+                        self.tty_buffer = None # reset reader, tty and punch
+                        self.reader_file = None
+                        self.punch_file = None
+                    elif ch != '\x00' and ch != '\xff' and ch != '\n':
+                        sys.stderr.write('\n--- Unexpected code ')
+                        sys.stderr.write(str(data[0]))
+                        sys.stderr.write('\n')
+                        sys.stderr.flush()
+                    else:
+                        sys.stderr.write('\n--- ignored code ') # temporary for debugging
+                        sys.stderr.write(str(data[0]))
+                        sys.stderr.write('\n')
+                        sys.stderr.flush()
         except serial.SerialException:
             self.alive = False
             self.console.cancel()
@@ -490,23 +476,26 @@ class Miniterm(object):
         menu_active = False
         try:
             while self.alive:
-                try:
-                    c = self.console.getkey()
-                except KeyboardInterrupt:
-                    c = '\x03'
-                if not self.alive:
-                    break
-                if menu_active:
-                    self.handle_menu_key(c)
-                    menu_active = False
-                elif c == self.menu_character:
-                    menu_active = True      # next char will be for menu
-                elif c == self.exit_character:
-                    self.stop()             # exit app
-                    break
-                elif self.tty_buffer is None:
-                    self.tty_buffer=ord(c)
-                    self.console.write(c)
+                if select.select([sys.stdin,],[],[],2.0)[0]:
+                    try:
+                        c = self.console.getkey()
+                    except KeyboardInterrupt:
+                        c = '\x03'
+                    if not self.alive:
+                        break
+                    if menu_active:
+                        self.handle_menu_key(c)
+                        menu_active = False
+                    elif c == self.menu_character:
+                        menu_active = True      # next char will be for menu
+                    elif c == self.exit_character:
+                        self.stop()             # exit app
+                        break
+                    elif self.tty_buffer is None:
+                        self.tty_buffer=ord(c) # buffer character for reader thread
+                        self.console.write(c) # local echo
+                    # if buffer full, drop character
+                time.sleep(0)
         except:
             self.alive = False
             raise
@@ -518,14 +507,12 @@ class Miniterm(object):
             self.serial.write(ord(c[0]))          
         elif c in '\x08hH?':                   # CTRL+H, h, H, ? -> Show help
             sys.stderr.write(self.get_help_text())
+            sys.stderr.flush()
         elif c in 'rR':                        # R -> upload paper tape reader file
             self.upload_file()
         elif c in 'pP':                        # P -> save punch output
             self.download_file()
-        elif c in 'dD':                        # D -> change device speeds
-            self.change_speed = True
-            sys.stderr.write("--- Toggle device speeds\n")
-        elif c in 'fF':                        # F -> flags and variables
+        elif c in 'fF':                        # F -> flags and variables   
             self.status()
         elif c in 'iI':                        # I -> info
             self.dump_port_settings()
@@ -539,9 +526,10 @@ class Miniterm(object):
         elif c in 'xX':                        # X -> restart terminal
             self.restart_reader()
         elif c in 'qQ':                        # Q -> exit app
-            self.stop()                        
+            self.stop()  
         else:
             sys.stderr.write('--- unknown menu character {}\n'.format(key_description(c)))
+            sys.stderr.flush()
 
     def status(self):
         if not self.reader_file:
@@ -556,11 +544,11 @@ class Miniterm(object):
         if self.tty_buffer:
             sys.stderr.write('--- Teleprinter character buffered\n')
         else:
-            sys.stderr.write('--- NO teleptype character buffered\n')
+            sys.stderr.write('--- No teletype character buffered\n')
 
     def download_file(self):
         """Ask user for punch file"""
-        if not self.punch_buffer: # check there is something to save
+        if self.punch_buffer == "": # check there is something to save
             sys.stderr.write('--- Nothing on punch to save\n')
             return
 
@@ -577,7 +565,7 @@ class Miniterm(object):
                     sys.stderr.write('--- ERROR opening file {}: {}\n'.format(filename, e))
             else:
                 sys.stderr.write('--- Paper tape output discarded\n')
-            self.punch_buffer = None
+            self.punch_buffer = ""
             
     def upload_file(self):
         """Ask user for paper tape input file"""
@@ -591,6 +579,7 @@ class Miniterm(object):
                         self.reader_file = f.read(-1)
                         self.reader_index = 0
                     sys.stderr.write('--- File {} loaded in paper tape reader\n'.format(filename))
+                    sys.stderr.flush()
                 except IOError as e:
                     sys.stderr.write('--- ERROR opening file {}: {}\n'.format(filename, e))
             else:
@@ -605,7 +594,6 @@ class Miniterm(object):
             backup = self.serial.baudrate
             try:
                 self.serial.baudrate = int(sys.stdin.readline().strip())
-                self.char_time = 5 / self.serial.baudrate
             except ValueError as e:
                 sys.stderr.write('--- ERROR setting baudrate: {}\n'.format(e))
                 self.serial.baudrate = backup
@@ -688,14 +676,16 @@ class Miniterm(object):
 ---    H Help
 ---
 ---    B change baud rate
-----   D Toggle device speeds
 ---    F Flags and variables (debugging information)
 ---    I Show serial port info  
 ---    P Save punch output to file (prompt will be shown)  
 ---    R Upload tape reader file (prompt will be shown)
 ---    S Change serial port
+---    Q Quit
 ---    X Reset terminal
 ---    Z Suspend port
+---    1 Select fast device speed
+---    2 Select normal device speed
 """.format(version=getattr(serial, 'VERSION', 'unknown version'),
            exit=key_description(self.exit_character),
            menu=key_description(self.menu_character))
@@ -826,6 +816,7 @@ def main(default_port=None, default_baudrate=115250,  serial_instance=None):
             key_description(miniterm.menu_character),
             key_description(miniterm.menu_character),
             key_description('\x08')))
+        sys.stderr.flush()
 
     miniterm.start()
     try:
