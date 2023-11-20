@@ -447,18 +447,15 @@ class Miniterm(object):
                         self.punch_to_tty()
 
                     elif ch == 'Z': # restarting
-                        sys.stderr.write('\n--- Restarting\n')
+                        sys.stderr.write('\n--- Restarting\n\n')
                         sys.stderr.flush();
                         self.tty_buffer = None # reset reader, tty and punch
                         self.reader_file = None
                         self.punch_file = None
-                    elif ch != '\x00' and ch != '\xff' and ch != '\n':
-                        sys.stderr.write('\n--- Unexpected code ')
-                        sys.stderr.write(str(data[0]))
-                        sys.stderr.write('\n')
-                        sys.stderr.flush()
+                    elif ch == '\x00' or ch == '\xff' or ch == '\n':
+                    	pass
                     else:
-                        sys.stderr.write('\n--- ignored code ') # temporary for debugging
+                        sys.stderr.write('\n--- Unexpected code ')
                         sys.stderr.write(str(data[0]))
                         sys.stderr.write('\n')
                         sys.stderr.flush()

@@ -253,9 +253,6 @@ int main() {
 
   status_on();
   
-  if ( logging() )
-    puts_raw("LPicoPTS Starting");
-  
   multicore_launch_core1(blinker); // set LED blinker running
   pts_emulation(); // set paper tape station running
   /* NOT REACHED */
@@ -367,8 +364,14 @@ static void pts_emulation()
   // here on a restart
 
   // empty any output from device
-  if ( logging() ) puts_raw("LInitialising serial interface");
   while ( getchar_timeout_us(0) != PICO_ERROR_TIMEOUT );
+  // signal a restart
+  putchar_raw('\x00'); // will terminate a P, Q
+  stdio_flush();
+  putchar_raw('\n'); // will terminate an L
+  stdio_flush();
+  putchar_raw('Z');
+  stdio_flush();
  
   if ( logging() ) puts_raw("LPicoPTS - Starting emulator");
 
