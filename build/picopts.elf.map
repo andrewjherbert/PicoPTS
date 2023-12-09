@@ -1017,9 +1017,9 @@ Discarded input sections
                 0x00000000        0x8 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj
  .bss.lockout_victim_initialized
                 0x00000000        0x2 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj
- .text          0x00000000        0x0 /var/folders/bd/yrtw28592k1dsbmxy9pkxn3m0000gn/T//ccv3zAPq.o
- .data          0x00000000        0x0 /var/folders/bd/yrtw28592k1dsbmxy9pkxn3m0000gn/T//ccv3zAPq.o
- .bss           0x00000000        0x0 /var/folders/bd/yrtw28592k1dsbmxy9pkxn3m0000gn/T//ccv3zAPq.o
+ .text          0x00000000        0x0 /var/folders/bd/yrtw28592k1dsbmxy9pkxn3m0000gn/T//ccGTH8br.o
+ .data          0x00000000        0x0 /var/folders/bd/yrtw28592k1dsbmxy9pkxn3m0000gn/T//ccGTH8br.o
+ .bss           0x00000000        0x0 /var/folders/bd/yrtw28592k1dsbmxy9pkxn3m0000gn/T//ccGTH8br.o
  .data          0x00000000        0x0 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
  .bss           0x00000000        0x0 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
  .text          0x00000000        0x0 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(libc_a-calloc.o)
@@ -1340,11 +1340,11 @@ LOAD /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-no
 .boot2          0x10000000      0x100
                 0x10000000                        __boot2_start__ = .
  *(.boot2)
- .boot2         0x10000000      0x100 /var/folders/bd/yrtw28592k1dsbmxy9pkxn3m0000gn/T//ccv3zAPq.o
+ .boot2         0x10000000      0x100 /var/folders/bd/yrtw28592k1dsbmxy9pkxn3m0000gn/T//ccGTH8br.o
                 0x10000100                        __boot2_end__ = .
                 0x00000001                        ASSERT (((__boot2_end__ - __boot2_start__) == 0x100), ERROR: Pico second stage bootloader must be 256 bytes in size)
 
-.text           0x10000100     0x4ed8
+.text           0x10000100     0x4f88
                 0x10000100                        __logical_binary_start = .
  *(.vectors)
  .vectors       0x10000100       0xd4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/crt0.S.obj
@@ -1410,379 +1410,379 @@ LOAD /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-no
                 0x100002e4       0x24 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp/crtbegin.o
  .text.blinker  0x10000308       0x50 CMakeFiles/picopts.dir/picopts.c.obj
  .text.punch_output
-                0x10000358       0x54 CMakeFiles/picopts.dir/picopts.c.obj
+                0x10000358       0x78 CMakeFiles/picopts.dir/picopts.c.obj
  .text.read_input
-                0x100003ac      0x178 CMakeFiles/picopts.dir/picopts.c.obj
+                0x100003d0       0xe0 CMakeFiles/picopts.dir/picopts.c.obj
  .text.pts_emulation
-                0x10000524      0x1a0 CMakeFiles/picopts.dir/picopts.c.obj
+                0x100004b0      0x2c4 CMakeFiles/picopts.dir/picopts.c.obj
  .text.startup.main
-                0x100006c4       0xd4 CMakeFiles/picopts.dir/picopts.c.obj
-                0x100006c4                main
+                0x10000774       0xd4 CMakeFiles/picopts.dir/picopts.c.obj
+                0x10000774                main
  .text.gpio_set_function
-                0x10000798       0x30 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj
-                0x10000798                gpio_set_function
+                0x10000848       0x30 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj
+                0x10000848                gpio_set_function
  .text.gpio_set_pulls
-                0x100007c8       0x24 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj
-                0x100007c8                gpio_set_pulls
+                0x10000878       0x24 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj
+                0x10000878                gpio_set_pulls
  .text.gpio_set_slew_rate
-                0x100007ec       0x20 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj
-                0x100007ec                gpio_set_slew_rate
+                0x1000089c       0x20 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj
+                0x1000089c                gpio_set_slew_rate
  .text.gpio_set_drive_strength
-                0x1000080c       0x20 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj
-                0x1000080c                gpio_set_drive_strength
+                0x100008bc       0x20 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj
+                0x100008bc                gpio_set_drive_strength
  .text.gpio_init_mask
-                0x1000082c       0x68 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj
-                0x1000082c                gpio_init_mask
+                0x100008dc       0x68 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_gpio/gpio.c.obj
+                0x100008dc                gpio_init_mask
  .text.running_on_fpga
-                0x10000894       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_platform/platform.c.obj
-                0x10000894                running_on_fpga
+                0x10000944       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_platform/platform.c.obj
+                0x10000944                running_on_fpga
  .text.hw_claim_or_assert
-                0x100008a4       0x44 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_claim/claim.c.obj
-                0x100008a4                hw_claim_or_assert
+                0x10000954       0x44 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_claim/claim.c.obj
+                0x10000954                hw_claim_or_assert
  .text.spin_locks_reset
-                0x100008e8       0x1c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_sync/sync.c.obj
-                0x100008e8                spin_locks_reset
+                0x10000998       0x1c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_sync/sync.c.obj
+                0x10000998                spin_locks_reset
  .text.next_striped_spin_lock_num
-                0x10000904       0x18 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_sync/sync.c.obj
-                0x10000904                next_striped_spin_lock_num
+                0x100009b4       0x18 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_sync/sync.c.obj
+                0x100009b4                next_striped_spin_lock_num
  .text.irq_set_enabled
-                0x1000091c       0x24 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj
-                0x1000091c                irq_set_enabled
+                0x100009cc       0x24 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj
+                0x100009cc                irq_set_enabled
  .text.irq_is_enabled
-                0x10000940       0x18 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj
-                0x10000940                irq_is_enabled
+                0x100009f0       0x18 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj
+                0x100009f0                irq_is_enabled
  .text.irq_get_vtable_handler
-                0x10000958       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj
-                0x10000958                irq_get_vtable_handler
+                0x10000a08       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj
+                0x10000a08                irq_get_vtable_handler
  .text.irq_set_exclusive_handler
-                0x10000968       0x54 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj
-                0x10000968                irq_set_exclusive_handler
+                0x10000a18       0x54 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj
+                0x10000a18                irq_set_exclusive_handler
  .text.irq_remove_handler
-                0x100009bc      0x1c4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj
-                0x100009bc                irq_remove_handler
+                0x10000a6c      0x1c4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj
+                0x10000a6c                irq_remove_handler
  .text.irq_add_tail_to_free_list
-                0x10000b80       0xb4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj
-                0x10000b80                irq_add_tail_to_free_list
+                0x10000c30       0xb4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj
+                0x10000c30                irq_add_tail_to_free_list
  .text.irq_init_priorities
-                0x10000c34       0x24 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj
-                0x10000c34                irq_init_priorities
+                0x10000ce4       0x24 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_irq/irq.c.obj
+                0x10000ce4                irq_init_priorities
  .text.lock_init
-                0x10000c58       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_sync/lock_core.c.obj
-                0x10000c58                lock_init
+                0x10000d08       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_sync/lock_core.c.obj
+                0x10000d08                lock_init
  .text.mutex_init
-                0x10000c68       0x1c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_sync/mutex.c.obj
-                0x10000c68                mutex_init
+                0x10000d18       0x1c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_sync/mutex.c.obj
+                0x10000d18                mutex_init
  .text.recursive_mutex_init
-                0x10000c84       0x1c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_sync/mutex.c.obj
-                0x10000c84                recursive_mutex_init
+                0x10000d34       0x1c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_sync/mutex.c.obj
+                0x10000d34                recursive_mutex_init
  .text.timer_pool_entry_comparator
-                0x10000ca0       0x34 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
-                0x10000ca0                timer_pool_entry_comparator
+                0x10000d50       0x34 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
+                0x10000d50                timer_pool_entry_comparator
  .text.sleep_until_callback
-                0x10000cd4       0x30 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
+                0x10000d84       0x30 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
  .text.add_alarm_under_lock.isra.0
-                0x10000d04      0x100 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
+                0x10000db4      0x100 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
  .text.alarm_pool_alarm_callback
-                0x10000e04      0x1c0 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
+                0x10000eb4      0x1c0 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
  .text.alarm_pool_init_default
-                0x10000fc4       0x6c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
-                0x10000fc4                alarm_pool_init_default
+                0x10001074       0x6c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
+                0x10001074                alarm_pool_init_default
  .text.alarm_pool_add_alarm_at
-                0x10001030      0x17c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
-                0x10001030                alarm_pool_add_alarm_at
+                0x100010e0      0x17c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
+                0x100010e0                alarm_pool_add_alarm_at
  .text.sleep_until
-                0x100011ac       0xc4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
-                0x100011ac                sleep_until
+                0x1000125c       0xc4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
+                0x1000125c                sleep_until
  .text.sleep_us
-                0x10001270       0x28 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
-                0x10001270                sleep_us
+                0x10001320       0x28 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
+                0x10001320                sleep_us
  .text.sleep_ms
-                0x10001298       0x38 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
-                0x10001298                sleep_ms
+                0x10001348       0x38 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
+                0x10001348                sleep_ms
  .text.best_effort_wfe_or_timeout
-                0x100012d0       0xcc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
-                0x100012d0                best_effort_wfe_or_timeout
+                0x10001380       0xcc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
+                0x10001380                best_effort_wfe_or_timeout
  .text.hardware_alarm_irq_handler
-                0x1000139c       0xbc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
+                0x1000144c       0xbc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
  .text.hardware_alarm_claim
-                0x10001458       0x18 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
-                0x10001458                hardware_alarm_claim
+                0x10001508       0x18 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
+                0x10001508                hardware_alarm_claim
  .text.time_us_64
-                0x10001470       0x14 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
-                0x10001470                time_us_64
+                0x10001520       0x14 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
+                0x10001520                time_us_64
  .text.busy_wait_us
-                0x10001484       0x68 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
-                0x10001484                busy_wait_us
+                0x10001534       0x68 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
+                0x10001534                busy_wait_us
  .text.busy_wait_until
-                0x100014ec       0x20 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
-                0x100014ec                busy_wait_until
+                0x1000159c       0x20 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
+                0x1000159c                busy_wait_until
  .text.hardware_alarm_set_callback
-                0x1000150c       0x8c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
-                0x1000150c                hardware_alarm_set_callback
+                0x100015bc       0x8c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
+                0x100015bc                hardware_alarm_set_callback
  .text.hardware_alarm_set_target
-                0x10001598       0xd0 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
-                0x10001598                hardware_alarm_set_target
+                0x10001648       0xd0 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
+                0x10001648                hardware_alarm_set_target
  .text.hardware_alarm_cancel
-                0x10001668       0x3c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
-                0x10001668                hardware_alarm_cancel
+                0x10001718       0x3c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
+                0x10001718                hardware_alarm_cancel
  .text.ph_merge_nodes
-                0x100016a4       0x58 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_util/pheap.c.obj
+                0x10001754       0x58 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_util/pheap.c.obj
  .text.ph_post_alloc_init
-                0x100016fc       0x3c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_util/pheap.c.obj
-                0x100016fc                ph_post_alloc_init
+                0x100017ac       0x3c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_util/pheap.c.obj
+                0x100017ac                ph_post_alloc_init
  .text.ph_merge_two_pass
-                0x10001738       0x8c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_util/pheap.c.obj
-                0x10001738                ph_merge_two_pass
+                0x100017e8       0x8c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_util/pheap.c.obj
+                0x100017e8                ph_merge_two_pass
  .text.ph_remove_any_head
-                0x100017c4      0x100 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_util/pheap.c.obj
+                0x10001874      0x100 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_util/pheap.c.obj
  .text.ph_remove_head
-                0x100018c4      0x104 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_util/pheap.c.obj
-                0x100018c4                ph_remove_head
+                0x10001974      0x104 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_util/pheap.c.obj
+                0x10001974                ph_remove_head
  .text.ph_remove_and_free_node
-                0x100019c8       0x78 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_util/pheap.c.obj
-                0x100019c8                ph_remove_and_free_node
+                0x10001a78       0x78 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_util/pheap.c.obj
+                0x10001a78                ph_remove_and_free_node
  .text.uart_init
-                0x10001a40      0x18c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_uart/uart.c.obj
-                0x10001a40                uart_init
+                0x10001af0      0x18c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_uart/uart.c.obj
+                0x10001af0                uart_init
  .text.clocks_init
-                0x10001bcc      0x2c8 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_clocks/clocks.c.obj
-                0x10001bcc                clocks_init
+                0x10001c7c      0x2c8 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_clocks/clocks.c.obj
+                0x10001c7c                clocks_init
  .text.clock_get_hz
-                0x10001e94        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_clocks/clocks.c.obj
-                0x10001e94                clock_get_hz
+                0x10001f44        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_clocks/clocks.c.obj
+                0x10001f44                clock_get_hz
  .text.pll_init
-                0x10001ea0       0xa4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_pll/pll.c.obj
-                0x10001ea0                pll_init
+                0x10001f50       0xa4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_pll/pll.c.obj
+                0x10001f50                pll_init
  .text.watchdog_start_tick
-                0x10001f44       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_watchdog/watchdog.c.obj
-                0x10001f44                watchdog_start_tick
+                0x10001ff4       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_watchdog/watchdog.c.obj
+                0x10001ff4                watchdog_start_tick
  .text.xosc_init
-                0x10001f54       0x28 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_xosc/xosc.c.obj
-                0x10001f54                xosc_init
+                0x10002004       0x28 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_xosc/xosc.c.obj
+                0x10002004                xosc_init
  .text.runtime_init
-                0x10001f7c       0xf0 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj
-                0x10001f7c                runtime_init
- .text._exit    0x1000206c        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj
-                0x1000206c                _exit
- .text.exit     0x10002070        0x8 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj
-                0x10002070                exit
- .text.panic    0x10002078       0x30 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj
-                0x10002078                panic
+                0x1000202c       0xf0 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj
+                0x1000202c                runtime_init
+ .text._exit    0x1000211c        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj
+                0x1000211c                _exit
+ .text.exit     0x10002120        0x8 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj
+                0x10002120                exit
+ .text.panic    0x10002128       0x30 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj
+                0x10002128                panic
  .text.hard_assertion_failure
-                0x100020a8        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj
-                0x100020a8                hard_assertion_failure
+                0x10002158        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj
+                0x10002158                hard_assertion_failure
  .text._out_null
-                0x100020b4        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
+                0x10002164        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
  .text._out_rev
-                0x100020b8       0xac CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
+                0x10002168       0xac CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
  .text._ntoa_format
-                0x10002164      0x250 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
+                0x10002214      0x250 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
  .text._out_char
-                0x100023b4       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
+                0x10002464       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
  .text._out_fct
-                0x100023c4       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
- .text._etoa    0x100023d4      0x464 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
- .text._ftoa    0x10002838      0x3c0 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
+                0x10002474       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
+ .text._etoa    0x10002484      0x464 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
+ .text._ftoa    0x100028e8      0x3c0 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
  .text._vsnprintf
-                0x10002bf8      0xbc8 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
+                0x10002ca8      0xbc8 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
  .text.vfctprintf
-                0x100037c0       0x20 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
-                0x100037c0                vfctprintf
+                0x10003870       0x20 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
+                0x10003870                vfctprintf
  .text.weak_raw_vprintf
-                0x100037e0       0x30 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
-                0x100037e0                weak_raw_vprintf
- .text          0x10003810       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_bit_ops/bit_ops_aeabi.S.obj
+                0x10003890       0x30 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
+                0x10003890                weak_raw_vprintf
+ .text          0x100038c0       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_bit_ops/bit_ops_aeabi.S.obj
  .text.rom_func_lookup
-                0x10003820       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_bootrom/bootrom.c.obj
-                0x10003820                rom_func_lookup
+                0x100038d0       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_bootrom/bootrom.c.obj
+                0x100038d0                rom_func_lookup
  .text.rom_data_lookup
-                0x10003830       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_bootrom/bootrom.c.obj
-                0x10003830                rom_data_lookup
+                0x100038e0       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_bootrom/bootrom.c.obj
+                0x100038e0                rom_data_lookup
  .text.rom_funcs_lookup
-                0x10003840       0x44 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_bootrom/bootrom.c.obj
-                0x10003840                rom_funcs_lookup
+                0x100038f0       0x44 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_bootrom/bootrom.c.obj
+                0x100038f0                rom_funcs_lookup
  .text.__wrap___aeabi_idiv
-                0x10003884       0x50 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_divider/divider.S.obj
-                0x10003884                __wrap___aeabi_idivmod
-                0x10003884                divmod_s32s32
-                0x10003884                div_s32s32
-                0x10003884                __wrap___aeabi_idiv
-                0x1000388c                divmod_s32s32_unsafe
-                0x100038b8                divmod_s32s32_savestate
+                0x10003934       0x50 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_divider/divider.S.obj
+                0x10003934                __wrap___aeabi_idivmod
+                0x10003934                divmod_s32s32
+                0x10003934                div_s32s32
+                0x10003934                __wrap___aeabi_idiv
+                0x1000393c                divmod_s32s32_unsafe
+                0x10003968                divmod_s32s32_savestate
  .text.__wrap___aeabi_uidiv
-                0x100038d4       0x4c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_divider/divider.S.obj
-                0x100038d4                __wrap___aeabi_uidiv
-                0x100038d4                __wrap___aeabi_uidivmod
-                0x100038d4                div_u32u32
-                0x100038d4                divmod_u32u32
-                0x100038dc                divmod_u32u32_unsafe
-                0x10003904                divmod_u32u32_savestate
+                0x10003984       0x4c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_divider/divider.S.obj
+                0x10003984                __wrap___aeabi_uidiv
+                0x10003984                __wrap___aeabi_uidivmod
+                0x10003984                div_u32u32
+                0x10003984                divmod_u32u32
+                0x1000398c                divmod_u32u32_unsafe
+                0x100039b4                divmod_u32u32_savestate
  .text.__wrap___aeabi_ldiv
-                0x10003920      0x424 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_divider/divider.S.obj
-                0x10003920                __wrap___aeabi_ldivmod
-                0x10003920                div_s64s64
-                0x10003920                divmod_s64s64
-                0x10003950                divmod_u64u64
-                0x10003950                div_u64u64
-                0x10003950                __wrap___aeabi_uldivmod
-                0x10003960                divmod_u64u64_savestate
-                0x10003980                divmod_s64s64_unsafe
-                0x10003a08                divmod_u64u64_unsafe
+                0x100039d0      0x424 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_divider/divider.S.obj
+                0x100039d0                __wrap___aeabi_ldivmod
+                0x100039d0                div_s64s64
+                0x100039d0                divmod_s64s64
+                0x10003a00                divmod_u64u64
+                0x10003a00                div_u64u64
+                0x10003a00                __wrap___aeabi_uldivmod
+                0x10003a10                divmod_u64u64_savestate
+                0x10003a30                divmod_s64s64_unsafe
+                0x10003ab8                divmod_u64u64_unsafe
  .text.__wrap___aeabi_darithmetic
-                0x10003d44       0x80 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
-                0x10003d44                __wrap___aeabi_drsub
-                0x10003d4a                __wrap___aeabi_dsub
-                0x10003d5c                __wrap___aeabi_dadd
-                0x10003d6e                __wrap___aeabi_ddiv
-                0x10003daa                __wrap___aeabi_dmul
+                0x10003df4       0x80 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
+                0x10003df4                __wrap___aeabi_drsub
+                0x10003dfa                __wrap___aeabi_dsub
+                0x10003e0c                __wrap___aeabi_dadd
+                0x10003e1e                __wrap___aeabi_ddiv
+                0x10003e5a                __wrap___aeabi_dmul
  .text.__wrap___aeabi_cdcmple
-                0x10003dc4       0x6c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
-                0x10003dc4                __wrap___aeabi_cdrcmple
-                0x10003dd4                __wrap___aeabi_cdcmple
-                0x10003dd4                __wrap___aeabi_cdcmpeq
+                0x10003e74       0x6c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
+                0x10003e74                __wrap___aeabi_cdrcmple
+                0x10003e84                __wrap___aeabi_cdcmple
+                0x10003e84                __wrap___aeabi_cdcmpeq
  .text.__wrap___aeabi_dcmplt
-                0x10003e30        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
-                0x10003e30                __wrap___aeabi_dcmplt
+                0x10003ee0        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
+                0x10003ee0                __wrap___aeabi_dcmplt
  .text.__wrap___aeabi_dcmpge
-                0x10003e3c       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
-                0x10003e3c                __wrap___aeabi_dcmpge
+                0x10003eec       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
+                0x10003eec                __wrap___aeabi_dcmpge
  .text.__wrap___aeabi_dcmpgt
-                0x10003e4c        0xa CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
-                0x10003e4c                __wrap___aeabi_dcmpgt
+                0x10003efc        0xa CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
+                0x10003efc                __wrap___aeabi_dcmpgt
  .text.__wrap___aeabi_dcmpun
-                0x10003e56       0x1c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
-                0x10003e56                __wrap___aeabi_dcmpun
- *fill*         0x10003e72        0x2 
+                0x10003f06       0x1c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
+                0x10003f06                __wrap___aeabi_dcmpun
+ *fill*         0x10003f22        0x2 
  .text.__wrap___aeabi_i2d
-                0x10003e74       0x38 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
-                0x10003e74                __wrap___aeabi_ui2d
-                0x10003e7c                __wrap___aeabi_i2d
+                0x10003f24       0x38 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
+                0x10003f24                __wrap___aeabi_ui2d
+                0x10003f2c                __wrap___aeabi_i2d
  .text.__wrap___aeabi_d2iz
-                0x10003eac       0x48 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
-                0x10003eac                __wrap___aeabi_d2iz
-                0x10003eac                double2int_z
+                0x10003f5c       0x48 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
+                0x10003f5c                __wrap___aeabi_d2iz
+                0x10003f5c                double2int_z
  .text.__wrap___aeabi_d2uiz
-                0x10003ef4       0x18 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
-                0x10003ef4                double2uint
-                0x10003ef4                __wrap___aeabi_d2uiz
+                0x10003fa4       0x18 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_aeabi.S.obj
+                0x10003fa4                double2uint
+                0x10003fa4                __wrap___aeabi_d2uiz
  .text.__aeabi_double_init
-                0x10003f0c       0x98 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_init_rom.c.obj
-                0x10003f0c                __aeabi_double_init
+                0x10003fbc       0x98 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_init_rom.c.obj
+                0x10003fbc                __aeabi_double_init
  .text.double_table_shim_on_use_helper
-                0x10003fa4       0x2c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj
-                0x10003fa4                double_table_shim_on_use_helper
+                0x10004054       0x2c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj
+                0x10004054                double_table_shim_on_use_helper
  .text.__wrap___aeabi_dsub
-                0x10003fd0       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj
-                0x10003fd0                drsub_shim
-                0x10003fd6                dsub_shim
+                0x10004080       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj
+                0x10004080                drsub_shim
+                0x10004086                dsub_shim
  .text.dadd_shim
-                0x10003fe0      0x15c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj
-                0x10003fe0                dadd_shim
+                0x10004090      0x15c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj
+                0x10004090                dadd_shim
  .text.dmul_shim
-                0x1000413c      0x15c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj
-                0x1000413c                dmul_shim
+                0x100041ec      0x15c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj
+                0x100041ec                dmul_shim
  .text.ddiv_shim
-                0x10004298      0x1b0 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj
-                0x10004298                ddiv_shim
+                0x10004348      0x1b0 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj
+                0x10004348                ddiv_shim
  .text.double2uint_shim
-                0x10004448        0xe CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj
-                0x10004448                double2uint_shim
-                0x1000444a                double2ufix_shim
- *fill*         0x10004456        0x2 
+                0x100044f8        0xe CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj
+                0x100044f8                double2uint_shim
+                0x100044fa                double2ufix_shim
+ *fill*         0x10004506        0x2 
  .text.double2uint64_shim
-                0x10004458       0x70 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj
-                0x10004458                double2uint64_shim
-                0x1000445a                double2ufix64_shim
-                0x1000447a                d2fix_a
+                0x10004508       0x70 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj
+                0x10004508                double2uint64_shim
+                0x1000450a                double2ufix64_shim
+                0x1000452a                d2fix_a
  .text.dunpacks
-                0x100044c8       0x3c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj
-                0x100044c8                dunpacks
+                0x10004578       0x3c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_double/double_v1_rom_shim.S.obj
+                0x10004578                dunpacks
  .text.__aeabi_lmul
-                0x10004504       0x32 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_int64_ops/pico_int64_ops_aeabi.S.obj
-                0x10004504                __wrap___aeabi_lmul
- *fill*         0x10004536        0x2 
+                0x100045b4       0x32 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_int64_ops/pico_int64_ops_aeabi.S.obj
+                0x100045b4                __wrap___aeabi_lmul
+ *fill*         0x100045e6        0x2 
  .text.__aeabi_float_init
-                0x10004538       0x64 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_float/float_init_rom.c.obj
-                0x10004538                __aeabi_float_init
+                0x100045e8       0x64 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_float/float_init_rom.c.obj
+                0x100045e8                __aeabi_float_init
  .text.float_table_shim_on_use_helper
-                0x1000459c       0x2c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_float/float_v1_rom_shim.S.obj
-                0x1000459c                float_table_shim_on_use_helper
- .text          0x100045c8       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_mem_ops/mem_ops_aeabi.S.obj
-                0x100045c8                __aeabi_mem_init
- .text.memcpy   0x100045d8        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_mem_ops/mem_ops_aeabi.S.obj
-                0x100045d8                __wrap___aeabi_memcpy
-                0x100045d8                __wrap_memcpy
+                0x1000464c       0x2c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_float/float_v1_rom_shim.S.obj
+                0x1000464c                float_table_shim_on_use_helper
+ .text          0x10004678       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_mem_ops/mem_ops_aeabi.S.obj
+                0x10004678                __aeabi_mem_init
+ .text.memcpy   0x10004688        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_mem_ops/mem_ops_aeabi.S.obj
+                0x10004688                __wrap___aeabi_memcpy
+                0x10004688                __wrap_memcpy
  .text.stdio_out_chars_no_crlf
-                0x100045e4       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
+                0x10004694       0x10 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
  .text.stdio_out_chars_crlf
-                0x100045f4       0x94 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
+                0x100046a4       0x94 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
  .text.stdio_buffered_printer
-                0x10004688       0x64 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
+                0x10004738       0x64 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
  .text.__wrap_putchar
-                0x100046ec       0x98 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
-                0x100046ec                __wrap_putchar
+                0x1000479c       0x98 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
+                0x1000479c                __wrap_putchar
  .text.__wrap_puts
-                0x10004784       0xe0 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
-                0x10004784                __wrap_puts
+                0x10004834       0xe0 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
+                0x10004834                __wrap_puts
  .text.putchar_raw
-                0x10004864       0x98 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
-                0x10004864                putchar_raw
+                0x10004914       0x98 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
+                0x10004914                putchar_raw
  .text.puts_raw
-                0x100048fc       0xe0 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
-                0x100048fc                puts_raw
+                0x100049ac       0xe0 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
+                0x100049ac                puts_raw
  .text.stdio_set_driver_enabled
-                0x100049dc       0x30 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
-                0x100049dc                stdio_set_driver_enabled
+                0x10004a8c       0x30 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
+                0x10004a8c                stdio_set_driver_enabled
  .text.stdio_flush
-                0x10004a0c       0x28 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
-                0x10004a0c                stdio_flush
+                0x10004abc       0x28 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
+                0x10004abc                stdio_flush
  .text.__wrap_vprintf
-                0x10004a34       0xd4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
-                0x10004a34                __wrap_vprintf
+                0x10004ae4       0xd4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
+                0x10004ae4                __wrap_vprintf
  .text.__wrap_printf
-                0x10004b08       0x18 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
-                0x10004b08                __wrap_printf
+                0x10004bb8       0x18 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
+                0x10004bb8                __wrap_printf
  .text.stdio_init_all
-                0x10004b20        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
-                0x10004b20                stdio_init_all
+                0x10004bd0        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
+                0x10004bd0                stdio_init_all
  .text.__wrap_getchar
-                0x10004b2c       0x7c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
-                0x10004b2c                __wrap_getchar
+                0x10004bdc       0x7c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
+                0x10004bdc                __wrap_getchar
  .text.getchar_timeout_us
-                0x10004ba8       0x98 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
-                0x10004ba8                getchar_timeout_us
+                0x10004c58       0x98 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
+                0x10004c58                getchar_timeout_us
  .text.stdio_uart_out_chars
-                0x10004c40       0x4c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
+                0x10004cf0       0x4c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
  .text.stdio_uart_in_chars
-                0x10004c8c       0x90 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
-                0x10004c8c                stdio_uart_in_chars
+                0x10004d3c       0x90 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
+                0x10004d3c                stdio_uart_in_chars
  .text.on_uart_rx
-                0x10004d1c       0x28 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
+                0x10004dcc       0x28 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
  .text.stdio_uart_set_chars_available_callback
-                0x10004d44       0x8c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
+                0x10004df4       0x8c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
  .text.stdio_uart_init
-                0x10004dd0       0x48 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
-                0x10004dd0                stdio_uart_init
+                0x10004e80       0x48 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
+                0x10004e80                stdio_uart_init
  .text.core1_trampoline
-                0x10004e18        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj
+                0x10004ec8        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj
  .text.core1_wrapper
-                0x10004e1c        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj
-                0x10004e1c                core1_wrapper
+                0x10004ecc        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj
+                0x10004ecc                core1_wrapper
  .text.multicore_launch_core1_raw
-                0x10004e28       0x84 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj
-                0x10004e28                multicore_launch_core1_raw
+                0x10004ed8       0x84 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj
+                0x10004ed8                multicore_launch_core1_raw
  .text.multicore_launch_core1
-                0x10004eac       0x58 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj
-                0x10004eac                multicore_launch_core1
- .text          0x10004f04       0x34 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(libc_a-setjmp.o)
-                0x10004f04                setjmp
-                0x10004f1c                longjmp
- .text.strlen   0x10004f38       0x5c /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(libc_a-strlen-stub.o)
-                0x10004f38                strlen
+                0x10004f5c       0x58 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj
+                0x10004f5c                multicore_launch_core1
+ .text          0x10004fb4       0x34 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(libc_a-setjmp.o)
+                0x10004fb4                setjmp
+                0x10004fcc                longjmp
+ .text.strlen   0x10004fe8       0x5c /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/thumb/v6-m/nofp/libc.a(libc_a-strlen-stub.o)
+                0x10004fe8                strlen
  *(.fini)
- .fini          0x10004f94        0x4 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp/crti.o
-                0x10004f94                _fini
- .fini.__stub   0x10004f98       0x40 linker stubs
+ .fini          0x10005044        0x4 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp/crti.o
+                0x10005044                _fini
+ .fini.__stub   0x10005048       0x40 linker stubs
  *crtbegin.o(.ctors)
  *crtbegin?.o(.ctors)
  *(EXCLUDE_FILE(*crtend.o *crtend?.o) .ctors)
@@ -1794,109 +1794,109 @@ LOAD /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-no
  *(SORT_BY_NAME(.dtors.*))
  *(.dtors)
  *(.eh_frame*)
- .eh_frame      0x10004fd8        0x0 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp/crtbegin.o
-                0x10004fd8                        . = ALIGN (0x4)
+ .eh_frame      0x10005088        0x0 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp/crtbegin.o
+                0x10005088                        . = ALIGN (0x4)
 
-.glue_7         0x10004fd8        0x0
- .glue_7        0x10004fd8        0x0 linker stubs
+.glue_7         0x10005088        0x0
+ .glue_7        0x10005088        0x0 linker stubs
 
-.glue_7t        0x10004fd8        0x0
- .glue_7t       0x10004fd8        0x0 linker stubs
+.glue_7t        0x10005088        0x0
+ .glue_7t       0x10005088        0x0 linker stubs
 
-.vfp11_veneer   0x10004fd8        0x0
- .vfp11_veneer  0x10004fd8        0x0 linker stubs
+.vfp11_veneer   0x10005088        0x0
+ .vfp11_veneer  0x10005088        0x0 linker stubs
 
-.v4_bx          0x10004fd8        0x0
- .v4_bx         0x10004fd8        0x0 linker stubs
+.v4_bx          0x10005088        0x0
+ .v4_bx         0x10005088        0x0 linker stubs
 
-.iplt           0x10004fd8        0x0
- .iplt          0x10004fd8        0x0 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp/crtbegin.o
+.iplt           0x10005088        0x0
+ .iplt          0x10005088        0x0 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp/crtbegin.o
 
-.rodata         0x10004fd8      0x4ac
+.rodata         0x10005088      0x4ac
  *(EXCLUDE_FILE(*libm.a: *libc.a:*lib_a-mem*.o *libgcc.a:) .rodata*)
  .rodata.pts_emulation.str1.4
-                0x10004fd8      0x268 CMakeFiles/picopts.dir/picopts.c.obj
+                0x10005088      0x268 CMakeFiles/picopts.dir/picopts.c.obj
                                  0xf5 (size before relaxing)
  .rodata.str1.4
-                0x10005240       0xa9 CMakeFiles/picopts.dir/picopts.c.obj
- .rodata.__bi_245.4
-                0x10005240        0xc CMakeFiles/picopts.dir/picopts.c.obj
- *fill*         0x1000524c        0x4 
+                0x100052f0       0xa9 CMakeFiles/picopts.dir/picopts.c.obj
+ .rodata.__bi_249.4
+                0x100052f0        0xc CMakeFiles/picopts.dir/picopts.c.obj
+ *fill*         0x100052fc        0x4 
  .rodata.at_the_end_of_time
-                0x10005250        0x8 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
-                0x10005250                at_the_end_of_time
+                0x10005300        0x8 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/common/pico_time/time.c.obj
+                0x10005300                at_the_end_of_time
  .rodata.hardware_alarm_claim.str1.4
-                0x10005258       0x22 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
+                0x10005308       0x22 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/hardware_timer/timer.c.obj
  .rodata.panic.str1.4
-                0x10005258       0x12 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj
+                0x10005308       0x12 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj
  .rodata.hard_assertion_failure.str1.4
-                0x10005258        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj
+                0x10005308        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj
  .rodata._ftoa.str1.4
-                0x10005258       0x15 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
+                0x10005308       0x15 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
  .rodata._vsnprintf
-                0x10005258      0x19c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
- *fill*         0x100053f4        0x4 
+                0x10005308      0x19c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
+ *fill*         0x100054a4        0x4 
  .rodata.pow10.0
-                0x100053f8       0x50 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
+                0x100054a8       0x50 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_printf/printf.c.obj
  .rodata.str1.4
-                0x10005448       0x3c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
+                0x100054f8       0x3c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
  .rodata.__bi_81
-                0x10005448        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
+                0x100054f8        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
  .rodata.__bi_75
-                0x10005454        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
+                0x10005504        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
  .rodata.__bi_44
-                0x10005460        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
+                0x10005510        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
  .rodata.crlf_str.0
-                0x1000546c        0x2 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
+                0x1000551c        0x2 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
  .rodata.str1.4
-                0x1000546e       0x2c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
- *fill*         0x1000546e        0x2 
+                0x1000551e       0x2c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
+ *fill*         0x1000551e        0x2 
  .rodata.__bi_33.4
-                0x10005470        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
+                0x10005520        0xc CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
  .rodata.__bi_34.5
-                0x1000547c        0x8 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
-                0x10005484                        . = ALIGN (0x4)
+                0x1000552c        0x8 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
+                0x10005534                        . = ALIGN (0x4)
  *(SORT_BY_ALIGNMENT(SORT_BY_NAME(.flashdata*)))
-                0x10005484                        . = ALIGN (0x4)
+                0x10005534                        . = ALIGN (0x4)
 
 .ARM.extab
  *(.ARM.extab* .gnu.linkonce.armextab.*)
-                0x10005484                        __exidx_start = .
+                0x10005534                        __exidx_start = .
 
 .ARM.exidx
  *(.ARM.exidx* .gnu.linkonce.armexidx.*)
-                0x10005484                        __exidx_end = .
-                0x10005484                        . = ALIGN (0x4)
-                0x10005484                        __binary_info_start = .
+                0x10005534                        __exidx_end = .
+                0x10005534                        . = ALIGN (0x4)
+                0x10005534                        __binary_info_start = .
 
-.binary_info    0x10005484       0x28
+.binary_info    0x10005534       0x28
  *(.binary_info.keep.*)
- .binary_info.keep.__bi_ptr245
-                0x10005484        0x4 CMakeFiles/picopts.dir/picopts.c.obj
+ .binary_info.keep.__bi_ptr249
+                0x10005534        0x4 CMakeFiles/picopts.dir/picopts.c.obj
  .binary_info.keep.__bi_ptr81
-                0x10005488        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
+                0x10005538        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
  .binary_info.keep.__bi_ptr75
-                0x1000548c        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
+                0x1000553c        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
  .binary_info.keep.__bi_ptr50
-                0x10005490        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
+                0x10005540        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
  .binary_info.keep.__bi_ptr44
-                0x10005494        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
+                0x10005544        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
  .binary_info.keep.__bi_ptr38
-                0x10005498        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
+                0x10005548        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
  .binary_info.keep.__bi_ptr30
-                0x1000549c        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
+                0x1000554c        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
  .binary_info.keep.__bi_ptr22
-                0x100054a0        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
+                0x10005550        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/binary_info.c.obj
  *(.binary_info.*)
  .binary_info.__bi_ptr34
-                0x100054a4        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
+                0x10005554        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
  .binary_info.__bi_ptr33
-                0x100054a8        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
-                0x100054ac                        __binary_info_end = .
+                0x10005558        0x4 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
+                0x1000555c                        __binary_info_end = .
 
-.rel.dyn        0x100054ac        0x0
- .rel.iplt      0x100054ac        0x0 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp/crtbegin.o
-                0x100054ac                        . = ALIGN (0x4)
+.rel.dyn        0x1000555c        0x0
+ .rel.iplt      0x1000555c        0x0 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp/crtbegin.o
+                0x1000555c                        . = ALIGN (0x4)
 
 .ram_vector_table
                 0x20000000       0xc0
@@ -1905,7 +1905,7 @@ LOAD /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-no
                 0x20000000       0xc0 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_runtime/runtime.c.obj
                 0x20000000                ram_vector_table
 
-.data           0x200000c0      0x1bc load address 0x100054ac
+.data           0x200000c0      0x1bc load address 0x1000555c
                 0x200000c0                        __data_start__ = .
  *(vtable)
  *(.time_critical*)
@@ -1987,36 +1987,36 @@ LOAD /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-no
  *(.jcr)
                 0x2000027c                        . = ALIGN (0x4)
                 0x2000027c                        __data_end__ = .
-                0x100054ac                        __etext = LOADADDR (.data)
+                0x1000555c                        __etext = LOADADDR (.data)
 
 .tm_clone_table
-                0x2000027c        0x0 load address 0x10005668
+                0x2000027c        0x0 load address 0x10005718
  .tm_clone_table
                 0x2000027c        0x0 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp/crtbegin.o
  .tm_clone_table
                 0x2000027c        0x0 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp/crtend.o
 
-.igot.plt       0x2000027c        0x0 load address 0x10005668
+.igot.plt       0x2000027c        0x0 load address 0x10005718
  .igot.plt      0x2000027c        0x0 /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp/crtbegin.o
 
 .uninitialized_data
-                0x2000027c        0x0 load address 0x10005668
+                0x2000027c        0x0 load address 0x10005718
                 0x2000027c                        . = ALIGN (0x4)
  *(.uninitialized_data*)
 
-.scratch_x      0x20040000        0x0 load address 0x10005668
+.scratch_x      0x20040000        0x0 load address 0x10005718
                 0x20040000                        __scratch_x_start__ = .
  *(.scratch_x.*)
                 0x20040000                        . = ALIGN (0x4)
                 0x20040000                        __scratch_x_end__ = .
-                0x10005668                        __scratch_x_source__ = LOADADDR (.scratch_x)
+                0x10005718                        __scratch_x_source__ = LOADADDR (.scratch_x)
 
-.scratch_y      0x20041000        0x0 load address 0x10005668
+.scratch_y      0x20041000        0x0 load address 0x10005718
                 0x20041000                        __scratch_y_start__ = .
  *(.scratch_y.*)
                 0x20041000                        . = ALIGN (0x4)
                 0x20041000                        __scratch_y_end__ = .
-                0x10005668                        __scratch_y_source__ = LOADADDR (.scratch_y)
+                0x10005718                        __scratch_y_source__ = LOADADDR (.scratch_y)
 
 .bss            0x20000280      0x58c
                 0x20000280                        . = ALIGN (0x4)
@@ -2098,8 +2098,8 @@ LOAD /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-no
  *(.stack*)
  .stack         0x20041000      0x800 CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_standard_link/crt0.S.obj
 
-.flash_end      0x10005668        0x0
-                0x10005668                        PROVIDE (__flash_binary_end = .)
+.flash_end      0x10005718        0x0
+                0x10005718                        PROVIDE (__flash_binary_end = .)
                 0x20040000                        __StackLimit = (ORIGIN (RAM) + LENGTH (RAM))
                 0x20041000                        __StackOneTop = (ORIGIN (SCRATCH_X) + LENGTH (SCRATCH_X))
                 0x20042000                        __StackTop = (ORIGIN (SCRATCH_Y) + LENGTH (SCRATCH_Y))
@@ -2155,7 +2155,7 @@ LOAD CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_co
 LOAD CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio/stdio.c.obj
 LOAD CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_stdio_uart/stdio_uart.c.obj
 LOAD CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj
-LOAD /var/folders/bd/yrtw28592k1dsbmxy9pkxn3m0000gn/T//ccv3zAPq.o
+LOAD /var/folders/bd/yrtw28592k1dsbmxy9pkxn3m0000gn/T//ccGTH8br.o
 LOAD /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/thumb/v6-m/nofp/libstdc++.a
 LOAD /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/../../../../arm-none-eabi/lib/thumb/v6-m/nofp/libm.a
 START GROUP
@@ -2251,7 +2251,7 @@ LOAD linker stubs
  .ARM.attributes
                 0x000005ea       0x2c CMakeFiles/picopts.dir/Users/andrewherbert/Dropbox/pico/pico-sdk/src/rp2_common/pico_multicore/multicore.c.obj
  .ARM.attributes
-                0x00000616       0x22 /var/folders/bd/yrtw28592k1dsbmxy9pkxn3m0000gn/T//ccv3zAPq.o
+                0x00000616       0x22 /var/folders/bd/yrtw28592k1dsbmxy9pkxn3m0000gn/T//ccGTH8br.o
  .ARM.attributes
                 0x00000638       0x1e /Applications/ArmGNUToolchain/13.2.Rel1/arm-none-eabi/bin/../lib/gcc/arm-none-eabi/13.2.1/thumb/v6-m/nofp/libgcc.a(_dvmd_tls.o)
  .ARM.attributes

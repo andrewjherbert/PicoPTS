@@ -105,7 +105,7 @@
 
 // Duration of ACK pulse, should be at least 1uS
 // so 920M can detect the ACK
-#define ACK_TIME     2u // microseconds
+#define ACK_TIME     2 // microseconds
 
 // GPIO pins
 
@@ -119,8 +119,6 @@
 #define RDR_64_PIN   8
 #define RDR_128_PIN  9 // Set msb of reader input
 
-#define RDR_PINS_MASK (255 << RDR_1_PIN) // PINs to bit mask 
-
 #define PUN_1_PIN   10 // Set lsb of punch output
 #define PUN_2_PIN   11 // these pins are assumed consecutive 
 #define PUN_4_PIN   12
@@ -129,8 +127,6 @@
 #define PUN_32_PIN  15
 #define PUN_64_PIN  16 
 #define PUN_128_PIN 17 // Pico sets to msb of punch output
-
-#define PUN_PINS_MASK (255 << PUN_1_PIN) // PINs to bit mask
 
 #define IO_PIN      18 // set HIGH during data transfersdata transfer LED
 #define ACK_PIN     19 // pulse HIGH to acknowledge RDR or PUN request
@@ -145,6 +141,8 @@
 #define LOG_PIN     27 // set HIGH to enable logging
 #define STATUS_PIN  28 // emulation status LED
 
+// GPIO bit positions
+#define LOG_BIT      (1 << LOG_PIN)
 #define RDR_1_BIT    (1 << RDR_1_PIN)
 #define PUN_1_BIT    (1 << PUN_1_PIN)
 #define RDRREQ_BIT   (1 << RDRREQ_PIN)
@@ -152,6 +150,11 @@
 #define TTYSEL_BIT   (1 << TTYSEL_PIN)
 #define REQ_BITS     (RDRREQ_BIT | PUNREQ_BIT | TTYSEL_BIT)
 
+// Useful masks
+#define RDR_PINS_MASK (255 << RDR_1_PIN) // PINs to bit mask 
+#define PUN_PINS_MASK (255 << PUN_1_PIN) // PINs to bit mask
+
+// request types
 #define NONE         0 // no request
 #define READER       1 // RDRREQ present
 #define READ_TTY     2 // RDRREQ+TTYSEL present
@@ -215,6 +218,7 @@ static void     wait_for_no_request();          // poll for absence of request
 static uint32_t ack();                          // signal an ACK
 static void     cancel_ack();                   // remove ACK if present
 static uint32_t logging();                      // TRUE is logging enabled
+static uint32_t gpio_debounce();                // debounce input GPIOs
 static void     led_on();                       // turn on onboard LED
 static void     status(const uint32_t onoff);   // set STATUS_LED
 static void     status_on();                    // turn on STATUS LED
@@ -520,36 +524,57 @@ static void setup_gpios()
   for ( uint32_t pin = 0 ; pin < 32 ; pin++ ) {
     if ( external_pins_mask & (1<<pin) ) {
       gpio_set_slew_rate(pin, GPIO_SLEW_RATE_SLOW);
-      gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_12MA);
+      gpio_set_drive_strength(pin, GPIO_DRIVE_STRENGTH_8MA);
     }
   }
   /**/
 }
 
+/* debounce GPIO inputs */
+
+static inline uint32_t gpio_debounce ()
+{
+  uint32_t count = 1, last = 0, next  = gpio_get_all() & in_pins_mask;
+  while ( TRUE ) {
+    if ( count >= 2 ) return next;
+    if ( last == next ) 
+      count++;
+    else
+      count = 0;
+    last = next;
+    next = gpio_get_all() & in_pins_mask;
+  }
+}
+
+
 /* Read logging status */
 
 static inline uint32_t logging() {
-  return gpio_get(LOG_PIN);
+  return gpio_debounce() & LOG_BIT;
 }
 
 /* Acknowledge a transfer */
 
 static inline uint32_t ack()
 {
-  gpio_put(ACK_PIN, 1u);
+  gpio_put(ACK_PIN, 1);
   sleep_us(ACK_TIME);
-  gpio_put(ACK_PIN, 0u);
+  gpio_put(ACK_PIN, 0);
 }
 
+/* Abandon a transfer */
+
 static inline void cancel_ack() {
-  gpio_put(ACK_PIN, 0u);
+  gpio_put(ACK_PIN, 0);
 }
 
 /* Request decoding */
 
 static inline uint32_t get_request() {
-  return gpio_get_all();
+  return gpio_debounce();
 }
+
+/* decode type of read request (reader or tty) */
 
 static inline uint32_t request_type(const uint32_t request) {
   uint32_t rp = request & (RDRREQ_BIT | PUNREQ_BIT);
@@ -569,44 +594,58 @@ static inline uint32_t request_type(const uint32_t request) {
     return BAD; // RDRREQ+PUNREQ simultaneously
 }
 
+/* Check a request has been cleared */
+
 static inline void wait_for_no_request() {
   uint32_t request;
-  while ( ((request = gpio_get_all()) & REQ_BITS) != 0 )
-    sleep_us(1u); // this sleep is needed
+  while ( ((request = gpio_debounce()) & REQ_BITS) != 0 )
+    sleep_us(1u); // HACK this sleep is needed
 }
+
+/* Turn on on board LED */
 
 static inline void led_on() {
   gpio_put(LED_PIN, 1);
 }
 
-static inline void status_on() {
-  gpio_put(STATUS_PIN, 1);
-}
-
-static inline void status_off() {
-  gpio_put(STATUS_PIN, 0);
-}
-
-static inline void io_on() {
-  gpio_put(IO_PIN, 1);
-}
-
-static inline void io_off() {
-  gpio_put(IO_PIN, 0);
-}
+/* Set status LED on/off */
 
 static inline void status_led(const uint32_t onoff) {
   gpio_put(STATUS_PIN, onoff);
 }
 
-static inline void put_read_data (const uint32_t ch) {
-  //gpio_put_masked(RDR_PINS_MASK, ch << RDR_1_PIN);
-  for (uint32_t i = 0 ; i < 8 ; i++ ) {
-    uint32_t bit = 1 << i;
-    gpio_put(RDR_1_PIN+i, ( ch & bit ? 1 : 0 ));
-  }
+
+/* Turn on status LED */
+
+static inline void status_on() {
+  gpio_put(STATUS_PIN, 1);
 }
 
+/* Turn off status LED */
+static inline void status_off() {
+  gpio_put(STATUS_PIN, 0);
+}
+
+/* Turn on IO LED */
+
+static inline void io_on() {
+  gpio_put(IO_PIN, 1);
+}
+
+/* Turn off IO LED */
+
+static inline void io_off() {
+  gpio_put(IO_PIN, 0);
+}
+
+
+/* Set RDR bits for a request */
+
+static inline void put_read_data (const uint32_t ch) {
+  gpio_put_masked(RDR_PINS_MASK, ch << RDR_1_PIN);
+}
+
+/* Fetch PUN bits from a request */
 static inline uint32_t get_punch_data (const uint32_t request) {
   return (request >> PUN_1_PIN) & 255;
 }
@@ -615,6 +654,8 @@ static inline uint32_t get_punch_data (const uint32_t request) {
 /**********************************************************/
 /*                          BLINKER                       */
 /**********************************************************/
+
+/* Status indicator thread */
 
 static inline void blinker()
 {

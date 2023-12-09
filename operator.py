@@ -2,7 +2,7 @@
 #
 # 900 Computer Operator
 #
-# Derived from pyserial miniterm by Andrew Herbert 20/11/2023
+# Derived from pyserial miniterm by Andrew Herbert 09/12/2023
 #
 # Very simple serial terminal
 #
@@ -463,6 +463,12 @@ class Miniterm(object):
             self.alive = False
             self.console.cancel()
             raise       # XXX handle instead of re-raise?
+        except OSError as error:
+            sys.stderr.write('\n--- OSError in reader\n')
+            sys.stderr.write(str(error))
+            self.alive = False
+            self.console.cancel()
+            #raise       # XXX handle instead of re-raise?
 
     def writer(self):
         """\
@@ -815,8 +821,8 @@ def main(default_port=None, default_baudrate=115250,  serial_instance=None):
             key_description('\x08')))
         sys.stderr.flush()
 
-    miniterm.start()
     try:
+        miniterm.start()
         miniterm.join(True)
     except KeyboardInterrupt:
         pass
